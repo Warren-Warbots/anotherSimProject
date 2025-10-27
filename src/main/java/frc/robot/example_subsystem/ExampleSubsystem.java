@@ -9,7 +9,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.constants.MotorIDConstants;
 import frc.robot.util.TalonFxUtils;
 
 public class ExampleSubsystem extends SubsystemBase {
@@ -40,23 +39,6 @@ public class ExampleSubsystem extends SubsystemBase {
     // This is where your state machine lives
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
     DogLog.log("ExampleSubsystem/state", state);
-
-    if (lastState != state) {
-      // this stuff runs once the first time you go into a state, if you need
-      // something to update continuously, like aiming the drivebase based on
-      // position, put it in the main state machine
-      // if you need it to happen once, put it here
-      switch (state) {
-        case INTAKING:
-          intakeMotor.setControl(ExampleConstants.intakeVoltageOut.withOutput(1.0));
-          break;
-        case OUTTAKING:
-          intakeMotor.setControl(ExampleConstants.intakeVoltageOut.withOutput(-1.0));
-
-        default:
-          break;
-      }
-    }
 
     switch (state) {
 
