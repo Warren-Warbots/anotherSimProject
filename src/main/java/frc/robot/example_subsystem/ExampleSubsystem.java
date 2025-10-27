@@ -3,11 +3,13 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.example_subsystem;
+
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.MotorIDConstants;
 import frc.robot.util.TalonFxUtils;
 
 public class ExampleSubsystem extends SubsystemBase {
@@ -29,16 +31,15 @@ public class ExampleSubsystem extends SubsystemBase {
   /*
    * add functions IF NEEDED, try not to add to many
    * some examples could be:
-   *  public functions so that other parts of the robot can check things like:
-   *  at Goal
+   * public functions so that other parts of the robot can check things like:
+   * at Goal
    */
-
 
   @Override
   public void periodic() {
     // This is where your state machine lives
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
-    DogLog.log("ExampleSubsystem/state",state);
+    DogLog.log("ExampleSubsystem/state", state);
 
     if (lastState != state) {
       // this stuff runs once the first time you go into a state, if you need
@@ -76,7 +77,5 @@ public class ExampleSubsystem extends SubsystemBase {
     lastState = state;
 
   }
-
- 
 
 }
