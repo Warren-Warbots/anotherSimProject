@@ -5,137 +5,43 @@
 package frc.robot.autos;
 
 import java.util.Optional;
-import java.util.jar.Attributes.Name;
-
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.commands.PathfindingCommand;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.FollowPathCommand;
-
 import dev.doglog.DogLog;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.robot_manager.RobotManager;
-import frc.robot.robot_manager.RobotState;
-import frc.robot.swerve.SwerveState;
-import frc.robot.swerve.SwerveSubsystem;
 
 // TODO configure pathplanner configs here and make localization subsystem
 
 /** Add your docs here. */
 public class Autos {
     private RobotManager manager;
-    private final SendableChooser<String> autoChooser = new SendableChooser<>();
-    private PathPlannerAuto selectedAuto;
-    private Optional<String> lastSelectedAuto = Optional.empty();
+    private final SendableChooser<WarbotAuto> autoChooser = new SendableChooser<>();
+    private WarbotAuto selectedAuto;
 
     public Autos(RobotManager robotManager) {
         this.manager = robotManager;
 
-        NamedCommands.registerCommand("Stow",
-                this.manager.setModeCommand(RobotState.STOW_NO_GP, true));
-
-        NamedCommands.registerCommand("aim_at_speaker",
-                this.manager.setModeCommand(RobotState.SPEAKER_SHOOTING, true)
-                        .andThen(Commands.waitSeconds(2.0))
-                        .andThen(this.manager.setModeCommand(RobotState.STOW_NO_GP, true)));
-
-        NamedCommands.registerCommand("intake",
-                this.manager.setModeCommand(RobotState.INTAKING)
-                        .alongWith(overrideY()));
-
-        NamedCommands.registerCommand("clear",
-                clear());
-
-        autoChooser.setDefaultOption("DoNothing", "DoNothing");
-        autoChooser.addOption("Tests", "Tests");
-        autoChooser.addOption("crazy", "crazy");
-        autoChooser.addOption("TestWheelRadius", "test_wheel_radius_auto");
+    
+        autoChooser.setDefaultOption("DoNothing", new DoNothingAuto());
 
         SmartDashboard.putData(autoChooser);
-        FollowPathCommand.warmupCommand().schedule();
-        // PathfindingCommand.warmupCommand().schedule();
 
-        selectedAuto = new PathPlannerAuto("DoNothing");
+
+        selectedAuto = new DoNothingAuto();
+        selectedAuto.setRobotManager(manager);
     }
 
 
-
-    public void preloadAuto() {
-        String currentlySelectedAuto = autoChooser.getSelected();
-        if (lastSelectedAuto.isEmpty()) {
-            if (currentlySelectedAuto != null) {
-
-                lastSelectedAuto = Optional.of(currentlySelectedAuto);
-            } else {
-                lastSelectedAuto = Optional.of("DoNothing");
-            }
-
-        }
-        if (lastSelectedAuto.get() != currentlySelectedAuto) {
-            // this means that a change to the autochoice was just made, time to preload a
-            // new auto
-            lastSelectedAuto = Optional.of(currentlySelectedAuto);
-            try {
-
-                selectedAuto = new PathPlannerAuto(lastSelectedAuto.get());
-            } catch (Exception e) {
-                DogLog.log("AutoChooser/failedAutoName", currentlySelectedAuto);
-            }
-
-        }
+    public void preloadAuto(){
+        selectedAuto=autoChooser.getSelected();
+        selectedAuto.setRobotManager(manager);
     }
 
     public Command getAutoCommand() {
-        return selectedAuto;
+        return selectedAuto.getAutoCommand();
     }
 
 
-    /*
-     * replace the ()->0.0 with methods that return feedback values 
-     * for example, if you were trying to grab a note on the centerline in 2024, you could do just a overrideY() feedback
-     * since you only need to move left/right to adjust for the note centering
-     * 
-     * in your robot manager or maybe a subsystem that tracks the notes, you would compute the difference between the 
-     * robots position and the notes position, multiply it by a kP and then return that value
-     * 
-     * ex: 
-     * in RobotManager.java:
-     * double kP = 3.0;
-     * 
-     * public double yErrorToNote(){
-     *  return kP* (notePose.getTranslation().getY() - robotPose.getTranslation().getY())
-     * }
-     * 
-     * in Autos.java
-     * 
-     * private Command overrideYToLineUpWithNote() {
-        return Commands.runOnce(() -> PPHolonomicDriveController.overrideYFeedback(manager::yErrorToNote));
-    }
-
-
-        once you made that command, when you started intaking you would make a named command that runs the
-        overrideYToLineUpWithNote command during the autopath 
-     */
-    private Command overrideX() {
-        return Commands.runOnce(() -> PPHolonomicDriveController.overrideXFeedback(() -> 0.0));
-    }
-    private Command overrideY() {
-        return Commands.runOnce(() -> PPHolonomicDriveController.overrideYFeedback(() -> 0.0));
-    }
-    private Command overrideXY() {
-        return Commands.runOnce(() -> PPHolonomicDriveController.overrideXYFeedback(() -> 0.0,()->0.0));
-    }
-    private Command overrideRotation() {
-        return Commands.runOnce(() -> PPHolonomicDriveController.overrideRotationFeedback(() -> 0.0));
-    }
-
-    private Command clear() {
-        return Commands.runOnce(() -> PPHolonomicDriveController.clearFeedbackOverrides());
-    }
-
+    
 }

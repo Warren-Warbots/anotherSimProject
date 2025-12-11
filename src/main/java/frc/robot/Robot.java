@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import com.ctre.phoenix.led.CANdle;
 
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
@@ -16,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.autos.Autos;
-import frc.robot.lights.LightsSubsystem;
+
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.RobotState;
 import frc.robot.swerve.SwerveSubsystem;
@@ -25,10 +24,9 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private CommandXboxController driverController = new CommandXboxController(0);
   private SwerveSubsystem swerve = new SwerveSubsystem(driverController);
-  private final CANdle candle = null;
-  private final LightsSubsystem lights = new LightsSubsystem(candle);
 
-  private final RobotManager manager = new RobotManager(swerve, lights);
+
+  private final RobotManager manager = new RobotManager(swerve);
   private Autos autos = new Autos(manager);
 
   public Robot() {
@@ -56,11 +54,11 @@ public class Robot extends TimedRobot {
     // driverController.x().whileTrue(manager.swerve.sysIdQuasistatic(Direction.kForward));
     // driverController.y().whileTrue(manager.swerve.sysIdQuasistatic(Direction.kReverse));
 
-    driverController.a().onTrue(manager.setModeCommand(RobotState.SPEAKER_SHOOTING));
-    driverController.b().onTrue(manager.setModeCommand(RobotState.STOW_HAS_GP));
-    driverController.y().onTrue(manager.setModeCommand(RobotState.AMP));
-    driverController.x().onTrue(manager.swerve.calibrateWheelRadius());
-    driverController.back().onTrue(Commands.runOnce(()->manager.swerve.drivetrain.tareEverything()));
+    // driverController.a().onTrue(manager.setModeCommand(RobotState.SPEAKER_SHOOTING));
+    // driverController.b().onTrue(manager.setModeCommand(RobotState.STOW_HAS_GP));
+    // driverController.y().onTrue(manager.setModeCommand(RobotState.AMP));
+    // driverController.x().onTrue(manager.swerve.calibrateWheelRadius());
+    // driverController.back().onTrue(Commands.runOnce(()->manager.swerve.drivetrain.tareEverything()));
   }
 
   @Override
@@ -87,7 +85,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_autonomousCommand = autos.getAutoCommand();
     if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
+        CommandScheduler.getInstance().schedule(m_autonomousCommand);
     }
   }
 
