@@ -1,0 +1,22 @@
+{
+    "image": "mcr.microsoft.com/devcontainers/universal:2",
+    "features": {
+      "ghcr.io/devcontainers/features/java:1": {
+        "version": "17",
+        "installGradle": true
+      }
+    },
+    "postCreateCommand": "cd /opt && wget 'https://github.com/wpilibsuite/vscode-wpilib/releases/download/v2026.1.1-beta-1/vscode-wpilib-2026.1.1-beta-1.vsix'",
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "/opt/vscode-wpilib-2026.1.1-beta-1.vsix",
+          "vscjava.vscode-java-pack",
+          "vscjava.vscode-gradle"
+        ],
+        "settings": {
+          "workbench.colorTheme": "Default Dark Modern"
+        }
+      }
+    }
+  }
