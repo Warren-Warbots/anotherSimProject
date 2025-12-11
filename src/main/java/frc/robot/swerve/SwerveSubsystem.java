@@ -12,10 +12,7 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.util.DriveFeedforwards;
+
 
 import dev.doglog.DogLog;
 
@@ -83,7 +80,7 @@ public class SwerveSubsystem extends SubsystemBase {
    */
 
   public SwerveSubsystem(CommandXboxController driverXboxController) {
-    drivetrain = new SwerveDrivetrain(SwerveConstants.swerveDrivetrainConstants,
+    drivetrain = new TunerSw(SwerveConstants.swerveDrivetrainConstants,
     SwerveConstants.FrontLeft,
     SwerveConstants.FrontRight,
     SwerveConstants.BackLeft,
@@ -113,7 +110,7 @@ public class SwerveSubsystem extends SubsystemBase {
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    configureAutoBuilder();
+
     drivetrain.registerTelemetry(telem::telemeterize);
   }
 
@@ -139,31 +136,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   }
 
-  private void configureAutoBuilder() {
-    try {
-      var config = RobotConfig.fromGUISettings();
-      AutoBuilder.configure(
-          () -> drivetrain.getState().Pose, // Supplier of current robot pose //TODO figure out if calling getState
-                                            // twice in a row, for pose and speeds is bad
-          drivetrain::resetPose, // Consumer for seeding pose against auto
-          () -> drivetrain.getState().Speeds, // Supplier of current robot speeds
-          // Consumer of ChassisSpeeds and feedforwards to drive the robot
-          this::setRobotRelativeSpeedsWithFeedForwards,
-          new PPHolonomicDriveController(
-              // PID constants for translation
-              SwerveConstants.translationPIDConstantsAuto,
-              // PID constants for rotation
-              SwerveConstants.rotationPIDConstantsAuto),
-          config,
-          // Assume the path needs to be flipped for Red vs Blue, this is normally the
-          // case
-          FmsUtil::isRedAlliance,
-          this // Subsystem for requirements
-      );
-    } catch (Exception ex) {
-      DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
-    }
-  }
+  
 
   public void setState(SwerveState newState) {
     state = newState;
@@ -173,34 +146,6 @@ public class SwerveSubsystem extends SubsystemBase {
     return state;
   }
 
-  public void setRobotRelativeSpeeds(ChassisSpeeds robotRelativeChassisSpeeds) {
-    // only to be used in auto
-    drivetrain.setControl(drive_robot_rel.withSpeeds(robotRelativeChassisSpeeds));
-  }
-
-  public void setRobotRelativeSpeedsWithFeedForwards(ChassisSpeeds robotRelativeChassisSpeeds,
-      DriveFeedforwards feedforwards) {
-    // only to be used in auto
-    drivetrain.setControl(drive_robot_rel.withSpeeds(robotRelativeChassisSpeeds)
-        .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-        .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons()));
-  }
-
-  public Command enableSnap() {
-    return Commands.runOnce(() -> setState(SwerveState.SNAP));
-  }
-
-  public Command disableSnap() {
-    return Commands.runOnce(() -> setState(SwerveState.NO_SNAP));
-  }
-
-  public void setSnapAngle(Rotation2d newSnapAngle) {
-    this.snapAngle = newSnapAngle;
-  }
-
-  public Rotation2d getSnapAngle() {
-    return this.snapAngle;
-  }
 
   public Pose2d getPose() {
     return swerveDriveState.Pose;

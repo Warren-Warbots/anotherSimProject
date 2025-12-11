@@ -8,7 +8,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
-import com.pathplanner.lib.config.PIDConstants;
+
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -61,8 +61,6 @@ public class SwerveConstants {
     public static final double snapTolerance = 0.5; // radians
     public static final double maintainHeadingTolerance = 0.5; // radians - this does nothing
 
-    // auto configs
-    public static final PIDConstants translationPIDConstantsAuto = new PIDConstants(15.0, 0.0, 0.0);
-    public static final PIDConstants rotationPIDConstantsAuto = new PIDConstants(15, 0.0, 0);
+
 
 }
