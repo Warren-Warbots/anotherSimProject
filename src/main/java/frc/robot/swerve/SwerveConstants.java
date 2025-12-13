@@ -12,6 +12,7 @@ import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants;
@@ -61,6 +62,9 @@ public class SwerveConstants {
     public static final double snapTolerance = 0.5; // radians
     public static final double maintainHeadingTolerance = 0.5; // radians - this does nothing
 
+    public static final PIDController teleopDriveToPoseController = new PIDController(1, 0, 0);
+    public static final PIDController autoDriveToPoseController = new PIDController(1, 0, 0);
+    
 
-
+    
 }
