@@ -30,6 +30,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
@@ -118,13 +119,7 @@ public class SwerveSubsystem extends SubsystemBase {
         drive_snap.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
         drive_snap.HeadingController.setTolerance(SwerveConstants.snapTolerance);
 
-        driveMaintainHeading = new SwerveRequest.FieldCentricFacingAngle()
-                .withDriveRequestType(DriveRequestType.Velocity)
-                .withDeadband(0.04)
-                .withRotationalDeadband(0.06 * SwerveConstants.maxRotSpeed);
-        driveMaintainHeading.HeadingController = SwerveConstants.maintainHeadingController;
-        driveMaintainHeading.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
-        driveMaintainHeading.HeadingController.setTolerance(SwerveConstants.maintainHeadingTolerance);
+    
 
         drive_robot_centric = new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.Velocity)
                 .withDeadband(0.08)
@@ -172,11 +167,7 @@ public class SwerveSubsystem extends SubsystemBase {
         return state;
     }
 
-  
 
-    public boolean isAtGoal() {
-        return atGoal;
-    }
 
     public Pose2d getPose() {
         return swerveDriveState.Pose;
@@ -221,6 +212,16 @@ public class SwerveSubsystem extends SubsystemBase {
       this.driveToPoseMaxSpeed=maxSpeed;
       this.driveToPoseMaxAngularSpeed=maxAngularSpeed;
       this.driveToPoseRotationToleranceDegrees = rotationToleranceDegrees;
+    }
+
+    public void setDriveToFieldRelativeOffset(Transform2d vectorToMove,double translationToleranceMeters, double maxSpeed, double rotationToleranceDegrees, double maxAngularSpeed){
+      this.driveToPoseTargetPose=swerveDriveState.Pose.plus(vectorToMove);
+      setDriveToPose(driveToPoseTargetPose, translationToleranceMeters, maxSpeed, rotationToleranceDegrees, maxAngularSpeed);
+    }
+
+    public void setDriveToRobotRelativeOffset(Transform2d vectorToMoveRobotFrame,double translationToleranceMeters, double maxSpeed, double rotationToleranceDegrees, double maxAngularSpeed){
+      this.driveToPoseTargetPose=swerveDriveState.Pose.plus(vectorToMoveRobotFrame.plus(new Transform2d(Translation2d.kZero,swerveDriveState.Pose.getRotation())));
+      setDriveToPose(driveToPoseTargetPose, translationToleranceMeters, maxSpeed, rotationToleranceDegrees, maxAngularSpeed);
     }
 
  
@@ -309,7 +310,7 @@ public class SwerveSubsystem extends SubsystemBase {
                     lastMaintainHeadingAngle = Optional.of(swerveDriveState.Pose.getRotation());
 
                 } else {
-                    drivetrain.setControl(driveMaintainHeading
+                    drivetrain.setControl(drive_snap
                             .withVelocityX(driverDesiredSpeeds.vxMetersPerSecond * getRobotTopSpeed())
                             .withVelocityY(driverDesiredSpeeds.vyMetersPerSecond * getRobotTopSpeed())
                             .withTargetDirection(lastMaintainHeadingAngle.get()));

@@ -5,10 +5,12 @@
 package frc.robot.robot_manager;
 
 import dev.doglog.DogLog;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.swerve.SwerveState;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.FieldUtil;
 
@@ -40,10 +42,24 @@ public class RobotManager extends SubsystemBase {
     return Commands.waitUntil(() -> this.state == waitState);
   }
 
+  public void startDriveToPose(Pose2d desiredPose,double translationToleranceMeters,double maxSpeed, double rotationToleranceDegrees, double maxAngularSpeed){
+    swerve.setDriveToPose(desiredPose, translationToleranceMeters, maxSpeed, rotationToleranceDegrees, maxAngularSpeed);
+    swerve.setState(SwerveState.DRIVE_TO_POSE);
+  }
+
+  public Command driveToPose(Pose2d desiredPose,double translationToleranceMeters,double maxSpeed, double rotationToleranceDegrees, double maxAngularSpeed,double timeout){
+    return Commands.runOnce(()->startDriveToPose(desiredPose, translationToleranceMeters, maxSpeed, rotationToleranceDegrees, maxAngularSpeed))
+    .andThen(Commands.waitUntil(()->swerve.isAtDriveToPoseSetpoint()).withTimeout(timeout));
+  }
+  
+
+
   @Override
   public void periodic() {
 
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
+
+   
 
     switch (state) {
       case STOW_HAS_GP:

@@ -53,11 +53,9 @@ public class SwerveConstants {
     public static final Matrix<N3, N1> megaTag2stdDev = VecBuilder.fill(.7, .7, 9999999);
 
     // snap configs
-    // this was sysid-ed but the hand tuned gains were like 15,0,1 so sysid is not
-    // worth
+
     public static final PhoenixPIDController snapController = new PhoenixPIDController(16.383, 0.0, 1);
 
-    public static final PhoenixPIDController maintainHeadingController = new PhoenixPIDController(15, 0.0, 1);
 
     public static final double snapTolerance = 0.5; // radians
     public static final double maintainHeadingTolerance = 0.5; // radians - this does nothing
