@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.lights_subsystem.LightsSubsystem;
 import frc.robot.swerve.SwerveState;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.FieldUtil;
@@ -20,11 +21,12 @@ public class RobotManager extends SubsystemBase {
   public RobotState state = RobotState.STOW_HAS_GP;
   public RobotState lastState = RobotState.STOW_NO_GP;
   public SwerveSubsystem swerve;
-
+  public LightsSubsystem lights;
   private double timestampAtSetState = Timer.getFPGATimestamp();
 
-  public RobotManager(SwerveSubsystem swerve) {
+  public RobotManager(SwerveSubsystem swerve,LightsSubsystem lights) {
     this.swerve = swerve;
+    this.lights = lights;
 
   }
 
@@ -32,6 +34,8 @@ public class RobotManager extends SubsystemBase {
     DogLog.log("Robot/state", state);
     timestampAtSetState = Timer.getFPGATimestamp();
     this.state = state;
+    
+    
   }
 
   public Command setModeCommand(RobotState state) {    
@@ -59,7 +63,7 @@ public class RobotManager extends SubsystemBase {
 
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
 
-   
+    lights.setRobotState(state);
 
     switch (state) {
       case STOW_HAS_GP:

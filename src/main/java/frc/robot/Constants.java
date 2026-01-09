@@ -25,6 +25,5 @@ public class Constants {
 
         // LIGHTS
         public static final int Lights_ID = 55;
-        public static int intakeMotorId = 19;
 
 }

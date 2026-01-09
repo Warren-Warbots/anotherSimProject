@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.autos.Autos;
-
+import frc.robot.lights_subsystem.LightsSubsystem;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.RobotState;
 import frc.robot.swerve.SwerveSubsystem;
@@ -24,9 +24,9 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private CommandXboxController driverController = new CommandXboxController(0);
   private SwerveSubsystem swerve = new SwerveSubsystem(driverController);
+  private LightsSubsystem lights = new LightsSubsystem();
 
-
-  private final RobotManager manager = new RobotManager(swerve);
+  private final RobotManager manager = new RobotManager(swerve,lights);
   private Autos autos = new Autos(manager);
 
   public Robot() {

@@ -7,6 +7,10 @@ package frc.robot.robot_manager;
 
 /** Add your docs here. */
 public enum RobotState {
+    STATE,
+    STATE1,
+    STATE2,
+    STATE3,
     STOW_NO_GP,
     STOW_HAS_GP;
 
