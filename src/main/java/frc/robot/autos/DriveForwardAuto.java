@@ -9,6 +9,7 @@ import frc.robot.util.FieldUtil;
 public class DriveForwardAuto extends WarbotAuto{
     @Override
     public Command getAutoCommand() {
-        return robotManager.driveToPose(FieldUtil.getExamplePose(),  0.1, 3, 3, 3, 3);
+        return robotManager.driveToPose(FieldUtil.getExamplePose(),  0.1, 3,
+         10, 3, 5);
     }
 }
