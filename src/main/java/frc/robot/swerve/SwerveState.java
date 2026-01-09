@@ -6,8 +6,8 @@ package frc.robot.swerve;
 
 /** Enum representing various swerve states. */
 public enum SwerveState {
-    SNAP,
-    NO_SNAP,
-    CALIBRATION;
+    
+    TELEOP_DRIVE,
+    CALIBRATION, DRIVE_TO_POSE, SNAP, SNAP_POINT;
 
 }
