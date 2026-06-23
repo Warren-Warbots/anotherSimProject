@@ -28,4 +28,12 @@ public class Constants {
         public static final int Intake_Motor_ID = 19;
         public static final int CANrange_ID = 45;
 
+        // Pivator
+        public static final int pivotMotorId = 20;
+        public static final int pivotCANcoder = 21;
+
+        // Elevator
+        public static final int elevatorMotorFrontId = 22;
+        public static final int elevatorMotorBackId = 23;
+
 }
