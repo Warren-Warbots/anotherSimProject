@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.autos.Autos;
 import frc.robot.example_pivator_subsystem.PivatorSubsystem;
+import frc.robot.example_intake_subsystem.IntakeSubsystem;
 import frc.robot.lights_subsystem.LightsSubsystem;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.WantedRobotState;
@@ -26,8 +27,9 @@ public class Robot extends TimedRobot {
   private SwerveSubsystem swerve = new SwerveSubsystem(driverController);
   private LightsSubsystem lights = new LightsSubsystem();
   private PivatorSubsystem pivot = new PivatorSubsystem();
+  private IntakeSubsystem intake = new IntakeSubsystem();
 
-  private final RobotManager manager = new RobotManager(swerve, lights, pivot);
+  private final RobotManager manager = new RobotManager(swerve, lights, pivot, intake);
   private Autos autos = new Autos(manager);
 
   public Robot() {
@@ -40,6 +42,11 @@ public class Robot extends TimedRobot {
   }
 
   public void configureButtonBindings() {
+    driverController.a().onTrue(manager.setWantedStateCommand(WantedRobotState.STOW));
+    driverController.b().onTrue(manager.setWantedStateCommand(WantedRobotState.INTAKE));
+    driverController.x().onTrue(manager.setWantedStateCommand(WantedRobotState.AUTO_SCORE));
+    driverController.y().onTrue(manager.setWantedStateCommand(WantedRobotState.MANUAL_SCORE));
+
     // driverController.a().whileTrue(manager.swerve.testDriveGains(1.0));
     // driverController.b().whileTrue(manager.swerve.testDriveGains(2.0));
     // driverController.x().whileTrue(manager.swerve.testDriveGains(3.0));

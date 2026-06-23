@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.example_pivator_subsystem.PivatorSubsystem;
+import frc.robot.example_intake_subsystem.IntakeSubsystem;
+import frc.robot.example_intake_subsystem.IntakeSubsystem.WantedState;
 import frc.robot.lights_subsystem.LightsSubsystem;
 import frc.robot.swerve.SwerveState;
 import frc.robot.swerve.SwerveSubsystem;
@@ -27,23 +29,28 @@ public class RobotManager extends SubsystemBase {
   public SwerveSubsystem swerve;
   public LightsSubsystem lights;
   public PivatorSubsystem pivot;
+  public IntakeSubsystem intake;
   private double timestampAtSetState = Timer.getFPGATimestamp();
 
-  public RobotManager(SwerveSubsystem swerve, LightsSubsystem lights, PivatorSubsystem pivot) {
+  public boolean hasGP = false;
+
+  public RobotManager(SwerveSubsystem swerve, LightsSubsystem lights, PivatorSubsystem pivot, IntakeSubsystem intake) {
     this.swerve = swerve;
     this.lights = lights;
-    this.pivot = pivot;
+    this.pivot = pivot
+    this.intake = intake;
+
   }
 
   public void setWantedState(WantedRobotState state) {
-    DogLog.log("Robot/state", state);
+    DogLog.log("Robot/wantedState", state);
     timestampAtSetState = Timer.getFPGATimestamp();
     this.wantedState = state;
 
   }
 
-  public Command setModeCommand(WantedRobotState state) {
-    return Commands.runOnce(() -> setWantedState(state));
+  public Command setWantedStateCommand(WantedRobotState wantedState) {
+    return Commands.runOnce(() -> setWantedState(wantedState));
   }
 
   public Command waitForStateCommand(WantedRobotState waitState) {
@@ -66,10 +73,11 @@ public class RobotManager extends SubsystemBase {
 
   @Override
   public void periodic() {
-
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
-
+    hasGP = intake.getSensor();
     lights.setRobotState(wantedState);
+    DogLog.log("Robot/currentState", currentState);
+
     lastWantedState = wantedState;
 
   }
@@ -104,12 +112,12 @@ public class RobotManager extends SubsystemBase {
   }
 
   public void stow() {
-    // hi
+    intake.setWantedState(WantedState.STOP);
 
   }
 
   public void intake() {
-    // hi
+    intake.setWantedState(WantedState.INTAKE);
 
   }
 
