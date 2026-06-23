@@ -6,6 +6,7 @@ package frc.robot.robot_manager;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -16,66 +17,108 @@ import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.FieldUtil;
 
 public class RobotManager extends SubsystemBase {
+  public WantedRobotState wantedState = WantedRobotState.STOW;
+  public WantedRobotState lastWantedState = WantedRobotState.STOW;
 
-  
-  public RobotState state = RobotState.STOW_HAS_GP;
-  public RobotState lastState = RobotState.STOW_NO_GP;
+  public CurrentRobotState currentState = CurrentRobotState.STOW;
+  public CurrentRobotState lastCurrentState = CurrentRobotState.STOW;
+
   public SwerveSubsystem swerve;
   public LightsSubsystem lights;
   private double timestampAtSetState = Timer.getFPGATimestamp();
 
-  public RobotManager(SwerveSubsystem swerve,LightsSubsystem lights) {
+  public RobotManager(SwerveSubsystem swerve, LightsSubsystem lights) {
     this.swerve = swerve;
     this.lights = lights;
 
   }
 
-  public void setState(RobotState state) {
+  public void setWantedState(WantedRobotState state) {
     DogLog.log("Robot/state", state);
     timestampAtSetState = Timer.getFPGATimestamp();
-    this.state = state;
-    
-    
+    this.wantedState = state;
+
   }
 
-  public Command setModeCommand(RobotState state) {    
-      return Commands.runOnce(() -> setState(state));
+  public Command setModeCommand(WantedRobotState state) {
+    return Commands.runOnce(() -> setWantedState(state));
   }
 
-  public Command waitForStateCommand(RobotState waitState) {
-    return Commands.waitUntil(() -> this.state == waitState);
+  public Command waitForStateCommand(WantedRobotState waitState) {
+    return Commands.waitUntil(() -> this.wantedState == waitState);
   }
 
-  public void startDriveToPose(Pose2d desiredPose,double translationToleranceMeters,double maxSpeed, double rotationToleranceDegrees, double maxAngularSpeed){
+  public void startDriveToPose(Pose2d desiredPose, double translationToleranceMeters, double maxSpeed,
+      double rotationToleranceDegrees, double maxAngularSpeed) {
     swerve.setDriveToPose(desiredPose, translationToleranceMeters, maxSpeed, rotationToleranceDegrees, maxAngularSpeed);
     swerve.setState(SwerveState.DRIVE_TO_POSE);
   }
 
-  public Command driveToPose(Pose2d desiredPose,double translationToleranceMeters,double maxSpeed, double rotationToleranceDegrees, double maxAngularSpeed,double timeout){
-    return Commands.runOnce(()->startDriveToPose(desiredPose, translationToleranceMeters, maxSpeed, rotationToleranceDegrees, maxAngularSpeed))
-    .andThen(Commands.waitUntil(()->swerve.isAtDriveToPoseSetpoint()).withTimeout(timeout));
+  public Command driveToPose(Pose2d desiredPose, double translationToleranceMeters, double maxSpeed,
+      double rotationToleranceDegrees, double maxAngularSpeed, double timeout) {
+    return Commands
+        .runOnce(() -> startDriveToPose(desiredPose, translationToleranceMeters, maxSpeed, rotationToleranceDegrees,
+            maxAngularSpeed))
+        .andThen(Commands.waitUntil(() -> swerve.isAtDriveToPoseSetpoint()).withTimeout(timeout));
   }
-  
-
 
   @Override
   public void periodic() {
 
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
 
-    lights.setRobotState(state);
-
-    switch (state) {
-      case STOW_HAS_GP:
-        break;
-      case STOW_NO_GP:
-        break;
-      default:
-        break;
-
-    }
-
-    lastState = state;
+    lights.setRobotState(wantedState);
+    lastWantedState = wantedState;
 
   }
+
+  public CurrentRobotState handleStateTransitions(WantedRobotState wantedState) {
+    return switch (wantedState) {
+      case STOW: {
+        yield CurrentRobotState.STOW; // always go to stow when wanted state is stow.
+      }
+      case INTAKE: {
+        yield CurrentRobotState.INTAKE;
+      }
+      case AUTO_SCORE: {
+        if (true) {
+          yield CurrentRobotState.AUTO_SCORE; // specific conditions to transition
+        }
+      }
+      case MANUAL_SCORE: {
+        yield CurrentRobotState.MANUAL_SCORE;
+      }
+    };
+  }
+
+  public void applyStates(CurrentRobotState currentState) {
+    switch (currentState) {
+      case STOW -> stow();
+      case INTAKE -> intake();
+      case AUTO_SCORE -> autoScore();
+      case MANUAL_SCORE -> manualScore();
+    }
+    ;
+  }
+
+  public void stow() {
+    // hi
+
+  }
+
+  public void intake() {
+    // hi
+
+  }
+
+  public void autoScore() {
+    // hi
+
+  }
+
+  public void manualScore() {
+    // hi
+
+  }
+
 }

@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -17,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.autos.Autos;
 import frc.robot.lights_subsystem.LightsSubsystem;
 import frc.robot.robot_manager.RobotManager;
-import frc.robot.robot_manager.RobotState;
+import frc.robot.robot_manager.WantedRobotState;
 import frc.robot.swerve.SwerveSubsystem;
 
 public class Robot extends TimedRobot {
@@ -26,7 +25,7 @@ public class Robot extends TimedRobot {
   private SwerveSubsystem swerve = new SwerveSubsystem(driverController);
   private LightsSubsystem lights = new LightsSubsystem();
 
-  private final RobotManager manager = new RobotManager(swerve,lights);
+  private final RobotManager manager = new RobotManager(swerve, lights);
   private Autos autos = new Autos(manager);
 
   public Robot() {
@@ -85,7 +84,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_autonomousCommand = autos.getAutoCommand();
     if (m_autonomousCommand != null) {
-        CommandScheduler.getInstance().schedule(m_autonomousCommand);
+      CommandScheduler.getInstance().schedule(m_autonomousCommand);
     }
   }
 
