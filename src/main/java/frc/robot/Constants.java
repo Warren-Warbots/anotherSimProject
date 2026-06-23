@@ -26,4 +26,12 @@ public class Constants {
         // LIGHTS
         public static final int Lights_ID = 55;
 
+        // Pivator
+        public static final int pivotMotorId = 20;
+        public static final int pivotCANcoder = 21;
+
+        // Elevator
+        public static final int elevatorMotorFrontId = 22;
+        public static final int elevatorMotorBackId = 23;
+
 }

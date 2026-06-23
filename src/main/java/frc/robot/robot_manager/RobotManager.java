@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.example_pivator_subsystem.PivatorSubsystem;
 import frc.robot.lights_subsystem.LightsSubsystem;
 import frc.robot.swerve.SwerveState;
 import frc.robot.swerve.SwerveSubsystem;
@@ -25,12 +26,13 @@ public class RobotManager extends SubsystemBase {
 
   public SwerveSubsystem swerve;
   public LightsSubsystem lights;
+  public PivatorSubsystem pivot;
   private double timestampAtSetState = Timer.getFPGATimestamp();
 
-  public RobotManager(SwerveSubsystem swerve, LightsSubsystem lights) {
+  public RobotManager(SwerveSubsystem swerve, LightsSubsystem lights, PivatorSubsystem pivot) {
     this.swerve = swerve;
     this.lights = lights;
-
+    this.pivot = pivot;
   }
 
   public void setWantedState(WantedRobotState state) {
