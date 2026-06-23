@@ -37,7 +37,7 @@ public class RobotManager extends SubsystemBase {
   public RobotManager(SwerveSubsystem swerve, LightsSubsystem lights, PivatorSubsystem pivot, IntakeSubsystem intake) {
     this.swerve = swerve;
     this.lights = lights;
-    this.pivot = pivot
+    this.pivot = pivot;
     this.intake = intake;
 
   }
