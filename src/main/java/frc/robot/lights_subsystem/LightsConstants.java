@@ -24,11 +24,9 @@ import frc.robot.Constants;
 /** Add your docs here. */
 public class LightsConstants {
 
-    public static int candleId = 55;
-
     public static CANdleConfiguration candleConfig = new CANdleConfiguration().withLED(
-        new LEDConfigs().withStripType(StripTypeValue.GRBW)
-        .withBrightnessScalar(1));
+            new LEDConfigs().withStripType(StripTypeValue.GRBW)
+                    .withBrightnessScalar(1));
     private static int START_LED = 0;
     private static int END_LED = 136;
 
@@ -36,7 +34,7 @@ public class LightsConstants {
     public static SolidColor white = new SolidColor(START_LED, END_LED).withColor(new RGBWColor(Color.kWhite));
     public static SolidColor pink = new SolidColor(START_LED, END_LED).withColor(new RGBWColor(Color.kDarkRed));
 
-    public static RainbowAnimation rainbow = new RainbowAnimation(START_LED, END_LED).withDirection(AnimationDirectionValue.Forward);
-    
+    public static RainbowAnimation rainbow = new RainbowAnimation(START_LED, END_LED)
+            .withDirection(AnimationDirectionValue.Forward);
 
 }

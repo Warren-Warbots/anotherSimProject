@@ -23,7 +23,9 @@ public class Constants {
                         .withTorqueOpenLoopRampPeriod(0.04)
                         .withVoltageOpenLoopRampPeriod(0.04);
 
-        // LIGHTS
+        // Motor IDs here
         public static final int Lights_ID = 55;
+        public static final int Intake_Motor_ID = 19;
+        public static final int CANrange_ID = 45;
 
 }

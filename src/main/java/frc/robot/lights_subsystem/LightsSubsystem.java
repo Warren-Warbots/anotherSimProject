@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.CANdle;
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.robot_manager.WantedRobotState;
 
 public class LightsSubsystem extends SubsystemBase {
@@ -16,7 +17,7 @@ public class LightsSubsystem extends SubsystemBase {
   CANdle candle;
 
   public LightsSubsystem() {
-    candle = new CANdle(LightsConstants.candleId);
+    candle = new CANdle(Constants.Lights_ID);
     candle.getConfigurator().apply(LightsConstants.candleConfig);
   }
 
