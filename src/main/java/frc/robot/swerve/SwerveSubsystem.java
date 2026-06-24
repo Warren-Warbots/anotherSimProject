@@ -53,7 +53,6 @@ import frc.robot.util.FmsUtil;
 import frc.robot.util.LimelightHelpers;
 import frc.robot.util.LimelightHelpers.PoseEstimate;
 
-
 public class SwerveSubsystem extends SubsystemBase {
     public TunerSwerveDrivetrain drivetrain;
     private SwerveRequest.FieldCentric drive_field_rel;
@@ -61,15 +60,15 @@ public class SwerveSubsystem extends SubsystemBase {
     private SwerveRequest.FieldCentricFacingAngle drive_snap;
     private SwerveRequest.FieldCentricFacingAngle driveMaintainHeading;
     private SwerveRequest.RobotCentric drive_robot_centric;
-    private SwerveState state = SwerveState.TELEOP_DRIVE;
+    public WantedState wantedState = WantedState.TELEOP_DRIVE;
+    private SystemState systemState = SystemState.TELEOP_DRIVE;
     private double currTopSpeedPercent = 1.0;
     private double currTopRotationSpeedPercent = 1.0;
     private ChassisSpeeds driverDesiredSpeeds = new ChassisSpeeds();
+    private double currentTime = 0.0;
 
     public SwerveDriveState swerveDriveState = new SwerveDriveState();
     public SwerveDriveState lastSwerveDriveState = new SwerveDriveState();
-
-
 
     private Matrix<N3, N1> stdDevs;
     private static final double kSimLoopPeriod = 0.005;
@@ -81,27 +80,24 @@ public class SwerveSubsystem extends SubsystemBase {
     private double rotationJoystickLastTouched = -1;
     private double highSpeedLastTime = -1;
 
-
-
     private Pose2d driveToPoseTargetPose = new Pose2d();
     private double driveToPoseMaxSpeed;
     private double driveToPoseMaxAngularSpeed;
     private double driveToPoseTranslationToleranceMeters;
     private double driveToPoseRotationToleranceDegrees;
-  
+
     private Rotation2d snapAngle = new Rotation2d();
     private Translation2d snapPoint = new Translation2d();
-  
-  
+
     private boolean atGoal = false;
     private boolean timerHasBeenEnabled = false;
-
 
     private String[] limelightNames = { "limelight" };
 
     private HashMap<String, Double> lastAddedVisionTimestampMap = new HashMap<String, Double>();
 
     public SwerveSubsystem(CommandXboxController driverXboxController) {
+
         drivetrain = new TunerSwerveDrivetrain(SwerveConstants.swerveDrivetrainConstants,
                 SwerveConstants.FrontLeft,
                 SwerveConstants.FrontRight,
@@ -119,36 +115,77 @@ public class SwerveSubsystem extends SubsystemBase {
         drive_snap.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
         drive_snap.HeadingController.setTolerance(SwerveConstants.snapTolerance);
 
-    
-
         drive_robot_centric = new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.Velocity)
                 .withDeadband(0.08)
                 .withRotationalDeadband(0.06 * SwerveConstants.maxRotSpeed);
 
         this.driverXboxController = driverXboxController;
 
-
         if (Utils.isSimulation()) {
             startSimThread();
         }
-  
+
         drivetrain.registerTelemetry(telem::telemeterize);
     }
 
+    public enum WantedState {
+        TELEOP_DRIVE,
+        CALIBRATION,
+        DRIVE_TO_POSE,
+        SNAP,
+        SNAP_POINT;
+    }
+
+    private enum SystemState {
+        TELEOP_DRIVE,
+        CALIBRATION,
+        DRIVE_TO_POSE,
+        SNAP,
+        SNAP_POINT;
+    }
+
+    private SystemState handleStateTransitions() {
+        return switch (wantedState) {
+            case TELEOP_DRIVE -> SystemState.TELEOP_DRIVE;
+            case CALIBRATION -> SystemState.CALIBRATION;
+            case DRIVE_TO_POSE -> SystemState.DRIVE_TO_POSE;
+            case SNAP -> SystemState.SNAP;
+            case SNAP_POINT -> SystemState.SNAP_POINT;
+        };
+    }
+
+    public void applyStates() {
+        switch (systemState) {
+            case TELEOP_DRIVE -> teleopDrive();
+            case CALIBRATION -> calibration();
+            case DRIVE_TO_POSE -> driveToPose();
+            case SNAP -> snap();
+            case SNAP_POINT -> snapPoint();
+
+        }
+    }
+
     public ChassisSpeeds getTeleopDriveSpeeds() {
-        double forward = ControllerHelpers.getExponent(
-                ControllerHelpers.getDeadbanded(driverXboxController.getLeftY(), SwerveConstants.leftYDeadband),
+        double xVariable = driverXboxController.getLeftX();
+        double yVariable = driverXboxController.getLeftY();
+        double mag = Math.hypot(xVariable, yVariable);
+        double direction = Math.atan2(yVariable, xVariable);
+
+        double translationScaled = ControllerHelpers.getExponent(
+                ControllerHelpers.getDeadbanded(mag, SwerveConstants.leftYDeadband),
                 SwerveConstants.leftYExponent);
-        double strafe = ControllerHelpers.getExponent(
-                ControllerHelpers.getDeadbanded(driverXboxController.getLeftX(), SwerveConstants.leftXDeadband),
-                SwerveConstants.leftXExponent);
         double rotate = -1.0 * ControllerHelpers.getExponent(
                 ControllerHelpers.getDeadbanded(driverXboxController.getRightX(), SwerveConstants.rightXDeadband),
                 SwerveConstants.rightXExponent);
+
+        double forward = Math.sin(direction) * translationScaled;
+        double strafe = Math.cos(direction) * translationScaled;
+
         if (!FmsUtil.isRedAlliance()) {
             strafe *= -1.0;
             forward *= -1.0;
         }
+
         driverDesiredSpeeds.vxMetersPerSecond = forward;
         driverDesiredSpeeds.vyMetersPerSecond = strafe;
         driverDesiredSpeeds.omegaRadiansPerSecond = rotate;
@@ -157,17 +194,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
     }
 
-    
-
-    public void setState(SwerveState newState) {
-        state = newState;
+    public void setWantedState(WantedState wantedState) {
+        this.wantedState = wantedState;
     }
 
-    public SwerveState getState() {
-        return state;
+    public SystemState getState() {
+        return systemState;
     }
-
-
 
     public Pose2d getPose() {
         return swerveDriveState.Pose;
@@ -194,39 +227,42 @@ public class SwerveSubsystem extends SubsystemBase {
         return Commands.runOnce(() -> drivetrain.getPigeon2().setYaw(0));
     }
 
-
-
-    public void setSnapPoint(Translation2d snapPoint){
-      //sets the point to look at while in snap
-      this.snapPoint=snapPoint;
+    public void setSnapPoint(Translation2d snapPoint) {
+        // sets the point to look at while in snap
+        this.snapPoint = snapPoint;
     }
 
-    public void setSnapAngle(Rotation2d snapAngle){
-      this.snapAngle=snapAngle;
+    public void setSnapAngle(Rotation2d snapAngle) {
+        this.snapAngle = snapAngle;
 
     }
-    
-    public void setDriveToPose(Pose2d targetPose,double translationToleranceMeters, double maxSpeed, double rotationToleranceDegrees, double maxAngularSpeed){
-      this.driveToPoseTargetPose=targetPose;
-      this.driveToPoseTranslationToleranceMeters=translationToleranceMeters;
-      this.driveToPoseMaxSpeed=maxSpeed;
-      this.driveToPoseMaxAngularSpeed=maxAngularSpeed;
-      this.driveToPoseRotationToleranceDegrees = rotationToleranceDegrees;
+
+    public void setDriveToPose(Pose2d targetPose, double translationToleranceMeters, double maxSpeed,
+            double rotationToleranceDegrees, double maxAngularSpeed) {
+        this.driveToPoseTargetPose = targetPose;
+        this.driveToPoseTranslationToleranceMeters = translationToleranceMeters;
+        this.driveToPoseMaxSpeed = maxSpeed;
+        this.driveToPoseMaxAngularSpeed = maxAngularSpeed;
+        this.driveToPoseRotationToleranceDegrees = rotationToleranceDegrees;
     }
 
-    public void setDriveToFieldRelativeOffset(Transform2d vectorToMove,double translationToleranceMeters, double maxSpeed, double rotationToleranceDegrees, double maxAngularSpeed){
-      this.driveToPoseTargetPose=swerveDriveState.Pose.plus(vectorToMove);
-      setDriveToPose(driveToPoseTargetPose, translationToleranceMeters, maxSpeed, rotationToleranceDegrees, maxAngularSpeed);
+    public void setDriveToFieldRelativeOffset(Transform2d vectorToMove, double translationToleranceMeters,
+            double maxSpeed, double rotationToleranceDegrees, double maxAngularSpeed) {
+        this.driveToPoseTargetPose = swerveDriveState.Pose.plus(vectorToMove);
+        setDriveToPose(driveToPoseTargetPose, translationToleranceMeters, maxSpeed, rotationToleranceDegrees,
+                maxAngularSpeed);
     }
 
-    public void setDriveToRobotRelativeOffset(Transform2d vectorToMoveRobotFrame,double translationToleranceMeters, double maxSpeed, double rotationToleranceDegrees, double maxAngularSpeed){
-      this.driveToPoseTargetPose=swerveDriveState.Pose.plus(vectorToMoveRobotFrame.plus(new Transform2d(Translation2d.kZero,swerveDriveState.Pose.getRotation())));
-      setDriveToPose(driveToPoseTargetPose, translationToleranceMeters, maxSpeed, rotationToleranceDegrees, maxAngularSpeed);
+    public void setDriveToRobotRelativeOffset(Transform2d vectorToMoveRobotFrame, double translationToleranceMeters,
+            double maxSpeed, double rotationToleranceDegrees, double maxAngularSpeed) {
+        this.driveToPoseTargetPose = swerveDriveState.Pose.plus(
+                vectorToMoveRobotFrame.plus(new Transform2d(Translation2d.kZero, swerveDriveState.Pose.getRotation())));
+        setDriveToPose(driveToPoseTargetPose, translationToleranceMeters, maxSpeed, rotationToleranceDegrees,
+                maxAngularSpeed);
     }
 
- 
-    //todo add distance to target 
-    
+    // todo add distance to target
+
     public boolean isAtDriveToPoseSetpoint() {
 
         DogLog.log("Swerve/isAlignAtGoal/distance",
@@ -235,19 +271,18 @@ public class SwerveSubsystem extends SubsystemBase {
                 FieldUtil.angleBetweenRotation2ds(driveToPoseTargetPose.getRotation(), getPose().getRotation()));
 
         DogLog.log("Swerve/isAlignAtGoal/distanceBool",
-                getPose().getTranslation().getDistance(driveToPoseTargetPose.getTranslation()) < driveToPoseTranslationToleranceMeters);
-        DogLog.log("Swerve/isAlignAtGoal/angleBool", FieldUtil.angleBetweenRotation2ds(driveToPoseTargetPose.getRotation(),
-                getPose().getRotation()) < driveToPoseRotationToleranceDegrees);
+                getPose().getTranslation()
+                        .getDistance(driveToPoseTargetPose.getTranslation()) < driveToPoseTranslationToleranceMeters);
+        DogLog.log("Swerve/isAlignAtGoal/angleBool",
+                FieldUtil.angleBetweenRotation2ds(driveToPoseTargetPose.getRotation(),
+                        getPose().getRotation()) < driveToPoseRotationToleranceDegrees);
 
-        return getPose().getTranslation().getDistance(driveToPoseTargetPose.getTranslation()) < driveToPoseTranslationToleranceMeters
+        return getPose().getTranslation()
+                .getDistance(driveToPoseTargetPose.getTranslation()) < driveToPoseTranslationToleranceMeters
                 && FieldUtil.angleBetweenRotation2ds(driveToPoseTargetPose.getRotation(),
                         getPose().getRotation()) < driveToPoseRotationToleranceDegrees;
 
     }
-
-    
-
-  
 
     @Override
     public void periodic() {
@@ -256,31 +291,31 @@ public class SwerveSubsystem extends SubsystemBase {
 
             addVisionPosesToPoseEstimator();
         }
+        systemState = handleStateTransitions();
+        applyStates();
 
         swerveDriveState = drivetrain.getState();
         lastSwerveDriveState = swerveDriveState;
         swerveDriveState = drivetrain.getState();
 
-        double currentTime = Timer.getFPGATimestamp();
+        currentTime = Timer.getFPGATimestamp();
         double robotSpeed = new Translation2d(swerveDriveState.Speeds.vxMetersPerSecond,
                 swerveDriveState.Speeds.vyMetersPerSecond).getNorm();
         DogLog.log("Swerve/ModuleStates", swerveDriveState.ModuleStates);
         DogLog.log("Swerve/EstimatedPose", swerveDriveState.Pose);
         DogLog.log("Swerve/TopSpeedPercent", currTopSpeedPercent);
         DogLog.log("Swerve/TopRotationSpeedPercent", currTopRotationSpeedPercent);
-        DogLog.log("Swerve/State", state);
+        DogLog.log("Swerve/SystemState", systemState);
 
         DogLog.log("Swerve/Speeds", swerveDriveState.Speeds);
-        
-        
 
         getTeleopDriveSpeeds();
 
         if (Math.abs(driverDesiredSpeeds.omegaRadiansPerSecond) > SwerveConstants.rightXDeadband) {
             rotationJoystickLastTouched = currentTime;
-            
-            if (state == SwerveState.SNAP || state == SwerveState.SNAP_POINT ) {
-                state = SwerveState.TELEOP_DRIVE;
+
+            if (systemState == SystemState.SNAP || systemState == SystemState.SNAP_POINT) {
+                setWantedState(WantedState.TELEOP_DRIVE);
             }
 
         }
@@ -288,91 +323,86 @@ public class SwerveSubsystem extends SubsystemBase {
         if (robotSpeed > 1) {
             highSpeedLastTime = currentTime;
         }
-        if (state != SwerveState.TELEOP_DRIVE) {
+        if (systemState != SystemState.TELEOP_DRIVE) {
             lastMaintainHeadingAngle = Optional.empty();
         }
 
         DogLog.log("Swerve/TeleopDesiredSpeeds", driverDesiredSpeeds);
-      
-        switch (state) {
-            case TELEOP_DRIVE:
-                if (Math.abs(driverDesiredSpeeds.omegaRadiansPerSecond) > SwerveConstants.rightXDeadband
-                        || lastMaintainHeadingAngle.isEmpty()
-                        || ((currentTime - highSpeedLastTime) > 0.1)
-                        || ((currentTime - rotationJoystickLastTouched < 0.2))) {
+    }
 
-                    drivetrain
-                            .setControl(drive_field_rel
-                                    .withVelocityX(driverDesiredSpeeds.vxMetersPerSecond * getRobotTopSpeed())
-                                    .withVelocityY(driverDesiredSpeeds.vyMetersPerSecond * getRobotTopSpeed())
-                                    .withRotationalRate(
-                                            driverDesiredSpeeds.omegaRadiansPerSecond * getRobotRotationSpeed()));
-                    lastMaintainHeadingAngle = Optional.of(swerveDriveState.Pose.getRotation());
+    private void teleopDrive() {
+        if (Math.abs(driverDesiredSpeeds.omegaRadiansPerSecond) > SwerveConstants.rightXDeadband
+                || lastMaintainHeadingAngle.isEmpty()
+                || ((currentTime - highSpeedLastTime) > 0.1)
+                || ((currentTime - rotationJoystickLastTouched < 0.2))) {
 
-                } else {
-                    drivetrain.setControl(drive_snap
+            drivetrain
+                    .setControl(drive_field_rel
                             .withVelocityX(driverDesiredSpeeds.vxMetersPerSecond * getRobotTopSpeed())
                             .withVelocityY(driverDesiredSpeeds.vyMetersPerSecond * getRobotTopSpeed())
-                            .withTargetDirection(lastMaintainHeadingAngle.get()));
+                            .withRotationalRate(
+                                    driverDesiredSpeeds.omegaRadiansPerSecond * getRobotRotationSpeed()));
+            lastMaintainHeadingAngle = Optional.of(swerveDriveState.Pose.getRotation());
 
-                }
-
-                timerHasBeenEnabled = false;
-
-                break;
-            case SNAP:
-                   drivetrain.setControl(drive_snap
-                            .withVelocityX(driverDesiredSpeeds.vxMetersPerSecond * getRobotTopSpeed())
-                            .withVelocityY(driverDesiredSpeeds.vyMetersPerSecond * getRobotTopSpeed())
-                            .withTargetDirection(snapAngle));
-                break;
-
-            case SNAP_POINT:
-                   drivetrain.setControl(drive_snap
-                            .withVelocityX(driverDesiredSpeeds.vxMetersPerSecond * getRobotTopSpeed())
-                            .withVelocityY(driverDesiredSpeeds.vyMetersPerSecond * getRobotTopSpeed())
-                            .withTargetDirection(FieldUtil.getFieldRelativeAngleToPose(swerveDriveState.Pose,snapPoint)));
-                break;
-            case DRIVE_TO_POSE:
-                Translation2d error = driveToPoseTargetPose.getTranslation().minus(swerveDriveState.Pose.getTranslation());
-                double distanceToGoal = error.getNorm();
-                Rotation2d directionOfTravel = error.getAngle();
-                double velocityOutput = 0.0;
-                if (DriverStation.isAutonomous()){
-                  velocityOutput = Math.min(
-                            Math.abs(SwerveConstants.autoDriveToPoseController.calculate(distanceToGoal, 0)) ,
-                            driveToPoseMaxSpeed);
-                } else {
-                    velocityOutput = Math.min(
-                            Math.abs(SwerveConstants.teleopDriveToPoseController.calculate(distanceToGoal, 0)) ,
-                            driveToPoseMaxSpeed);
-                }
-                double xComponent = velocityOutput * directionOfTravel.getCos();
-                double yComponent = velocityOutput * directionOfTravel.getSin();
-
-                DogLog.log("Swerve/DriveToPoint/xVelocitySetpoint", xComponent);
-                DogLog.log("Swerve/DriveToPoint/yVelocitySetpoint", yComponent);
-                DogLog.log("Swerve/DriveToPoint/velocityOutput", velocityOutput);
-                DogLog.log("Swerve/DriveToPoint/linearDistance", distanceToGoal);
-                DogLog.log("Swerve/DriveToPoint/directionOfTravel", directionOfTravel);
-                DogLog.log("Swerve/DriveToPoint/desiredPoint", driveToPoseTargetPose);
-
-
-                drivetrain.setControl(drive_snap
-                  .withVelocityX(xComponent)
-                  .withVelocityY(yComponent)
-                  .withTargetDirection(driveToPoseTargetPose.getRotation())
-                  .withMaxAbsRotationalRate(driveToPoseMaxAngularSpeed)
-                );
-                break;
-            case CALIBRATION:
-
-                break;
-
-            default:
-                break;
+        } else {
+            drivetrain.setControl(drive_snap
+                    .withVelocityX(driverDesiredSpeeds.vxMetersPerSecond * getRobotTopSpeed())
+                    .withVelocityY(driverDesiredSpeeds.vyMetersPerSecond * getRobotTopSpeed())
+                    .withTargetDirection(lastMaintainHeadingAngle.get()));
 
         }
+
+        timerHasBeenEnabled = false;
+    }
+
+    private void snap() {
+        drivetrain.setControl(drive_snap
+                .withVelocityX(driverDesiredSpeeds.vxMetersPerSecond * getRobotTopSpeed())
+                .withVelocityY(driverDesiredSpeeds.vyMetersPerSecond * getRobotTopSpeed())
+                .withTargetDirection(snapAngle));
+    }
+
+    private void snapPoint() {
+        drivetrain.setControl(drive_snap
+                .withVelocityX(driverDesiredSpeeds.vxMetersPerSecond * getRobotTopSpeed())
+                .withVelocityY(driverDesiredSpeeds.vyMetersPerSecond * getRobotTopSpeed())
+                .withTargetDirection(FieldUtil.getFieldRelativeAngleToPose(swerveDriveState.Pose, snapPoint)));
+    }
+
+    private void driveToPose() {
+        Translation2d error = driveToPoseTargetPose.getTranslation()
+                .minus(swerveDriveState.Pose.getTranslation());
+        double distanceToGoal = error.getNorm();
+        Rotation2d directionOfTravel = error.getAngle();
+        double velocityOutput = 0.0;
+        if (DriverStation.isAutonomous()) {
+            velocityOutput = Math.min(
+                    Math.abs(SwerveConstants.autoDriveToPoseController.calculate(distanceToGoal, 0)),
+                    driveToPoseMaxSpeed);
+        } else {
+            velocityOutput = Math.min(
+                    Math.abs(SwerveConstants.teleopDriveToPoseController.calculate(distanceToGoal, 0)),
+                    driveToPoseMaxSpeed);
+        }
+        double xComponent = velocityOutput * directionOfTravel.getCos();
+        double yComponent = velocityOutput * directionOfTravel.getSin();
+
+        DogLog.log("Swerve/DriveToPoint/xVelocitySetpoint", xComponent);
+        DogLog.log("Swerve/DriveToPoint/yVelocitySetpoint", yComponent);
+        DogLog.log("Swerve/DriveToPoint/velocityOutput", velocityOutput);
+        DogLog.log("Swerve/DriveToPoint/linearDistance", distanceToGoal);
+        DogLog.log("Swerve/DriveToPoint/directionOfTravel", directionOfTravel);
+        DogLog.log("Swerve/DriveToPoint/desiredPoint", driveToPoseTargetPose);
+
+        drivetrain.setControl(drive_snap
+                .withVelocityX(xComponent)
+                .withVelocityY(yComponent)
+                .withTargetDirection(driveToPoseTargetPose.getRotation())
+                .withMaxAbsRotationalRate(driveToPoseMaxAngularSpeed));
+    }
+
+    private void calibration() {
+        // hi
     }
 
     public void addVisionPosesToPoseEstimator() {
@@ -439,10 +469,6 @@ public class SwerveSubsystem extends SubsystemBase {
         }
 
     }
-
-    
-
-
 
     private void startSimThread() {
         System.out.println("Starting Sim thread");

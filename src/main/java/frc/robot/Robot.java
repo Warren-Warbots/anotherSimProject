@@ -42,10 +42,9 @@ public class Robot extends TimedRobot {
   }
 
   public void configureButtonBindings() {
-    driverController.a().onTrue(manager.setWantedStateCommand(WantedRobotState.STOW));
-    driverController.b().onTrue(manager.setWantedStateCommand(WantedRobotState.INTAKE));
-    driverController.x().onTrue(manager.setWantedStateCommand(WantedRobotState.AUTO_SCORE));
-    driverController.y().onTrue(manager.setWantedStateCommand(WantedRobotState.MANUAL_SCORE));
+    driverController.a().onTrue(manager.setWantedRobotStateCommand(WantedRobotState.STOW));
+    driverController.b().onTrue(manager.setWantedRobotStateCommand(WantedRobotState.INTAKE));
+    driverController.x().onTrue(manager.setWantedRobotStateCommand(WantedRobotState.AUTO_SCORE_L4));
 
     // driverController.a().whileTrue(manager.swerve.testDriveGains(1.0));
     // driverController.b().whileTrue(manager.swerve.testDriveGains(2.0));

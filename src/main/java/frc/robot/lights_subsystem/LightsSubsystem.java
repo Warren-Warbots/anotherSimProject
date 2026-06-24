@@ -39,8 +39,7 @@ public class LightsSubsystem extends SubsystemBase {
       case INTAKE:
         candle.setControl(LightsConstants.pink);
         break;
-      case AUTO_SCORE:
-      case MANUAL_SCORE:
+      case AUTO_SCORE_L4:
         candle.setControl(LightsConstants.rainbow);
         break;
 
