@@ -88,7 +88,7 @@ public class PivatorSubsystem extends SubsystemBase {
     };
   }
 
-  public void apply() {
+  public void applyStates() {
     switch (systemState) {
       case STOWED -> stow();
       case LVL3 -> scoreLVL3();

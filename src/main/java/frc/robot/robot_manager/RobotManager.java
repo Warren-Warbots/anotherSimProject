@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.example_pivator_subsystem.PivatorSubsystem;
 import frc.robot.example_intake_subsystem.IntakeSubsystem;
 import frc.robot.lights_subsystem.LightsSubsystem;
-import frc.robot.swerve.SwerveState;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.FieldUtil;
 
@@ -56,7 +55,7 @@ public class RobotManager extends SubsystemBase {
   public void startDriveToPose(Pose2d desiredPose, double translationToleranceMeters, double maxSpeed,
       double rotationToleranceDegrees, double maxAngularSpeed) {
     swerve.setDriveToPose(desiredPose, translationToleranceMeters, maxSpeed, rotationToleranceDegrees, maxAngularSpeed);
-    swerve.setState(SwerveState.DRIVE_TO_POSE);
+    swerve.setWantedState(SwerveSubsystem.WantedState.DRIVE_TO_POSE);
   }
 
   public Command driveToPose(Pose2d desiredPose, double translationToleranceMeters, double maxSpeed,
@@ -122,6 +121,7 @@ public class RobotManager extends SubsystemBase {
   private void prepareScoreL4() {
     intake.setWantedState(IntakeSubsystem.WantedState.STOP);
     pivot.setWantedState(PivatorSubsystem.WantedState.LVL4);
+    startDriveToPose(FieldUtil.getExamplePose(), 0.05, 3.0, 1, 2.0);
     // transition to actively scoring is handled in handleStateTransitions()
   }
 
