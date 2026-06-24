@@ -77,7 +77,7 @@ public class RobotManager extends SubsystemBase {
 
   }
 
-  public CurrentRobotState handleStateTransitions() {
+  private CurrentRobotState handleStateTransitions() {
     return switch (wantedState) {
       case STOW: {
         yield CurrentRobotState.STOW; // always go to stow when wanted state is stow.
@@ -96,7 +96,7 @@ public class RobotManager extends SubsystemBase {
     };
   }
 
-  public void applyStates() {
+  private void applyStates() {
     switch (currentState) {
       case STOW -> stow();
       case INTAKE -> intake();

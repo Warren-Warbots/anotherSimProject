@@ -86,7 +86,7 @@ public class PivatorSubsystem extends SubsystemBase {
    * at Goal
    */
 
-  public SystemState handleStateTransition() {
+  private SystemState handleStateTransition() {
     return switch (wantedState) {
       case STOW -> SystemState.STOWED;
       case LVL3 -> SystemState.LVL3;
@@ -94,7 +94,7 @@ public class PivatorSubsystem extends SubsystemBase {
     };
   }
 
-  public void applyStates() {
+  private void applyStates() {
     switch (systemState) {
       case STOWED -> stow();
       case LVL3 -> scoreLVL3();
@@ -119,6 +119,8 @@ public class PivatorSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    systemState = handleStateTransition();
+    applyStates();
     currentHeight = elevatorMotorFront.getPosition().getValueAsDouble();
     currentRotation = pivotMotor.getPosition().getValueAsDouble();
 
@@ -129,12 +131,10 @@ public class PivatorSubsystem extends SubsystemBase {
     boolean pivotAtGoal = angleError < PivatorConstants.pivotTolerance;
     boolean elevatorAtGoal = heightError < PivatorConstants.elevatorTolerance;
 
-    // This is where your state machine lives
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
     heightError = Math.abs(targetHeight - currentHeight);
     angleError = Math.abs(targetPivotRotation - currentRotation);
     atGoal = pivotAtGoal && elevatorAtGoal;
-    // DogLog.log("ExampleSubsystem/state", state);
 
   }
 

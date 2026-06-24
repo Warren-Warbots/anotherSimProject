@@ -83,11 +83,11 @@ public class IntakeSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     systemState = handleStateTransitions();
+    applyStates();
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
     // this is where logging goes
     DogLog.log("ExampleIntakeSubsystem/wantedState", wantedState);
     DogLog.log("ExampleIntakeSubsystem/systemState", systemState);
-    applyStates();
 
   }
 
