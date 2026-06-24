@@ -16,10 +16,8 @@ import frc.robot.util.TalonFxUtils;
 public class IntakeSubsystem extends SubsystemBase {
   /** Creates a new IntakeSubsystem. */
 
-  WantedState wantedState = WantedState.STOP;
-  WantedState lastWantedState = WantedState.STOP;
-  SystemState systemState = SystemState.STOPPED;
-  SystemState lastSystemState = SystemState.STOPPED;
+  public WantedState wantedState = WantedState.STOP;
+  private SystemState systemState = SystemState.STOPPED;
 
   private double timestampAtSetState = Timer.getFPGATimestamp();
 
@@ -73,7 +71,7 @@ public class IntakeSubsystem extends SubsystemBase {
     };
   }
 
-  // this applies motor controls based on systemState
+  // this applies motor controls based on systemState (simple version)
   private void applyStates() {
     switch (systemState) {
       case INTAKING -> intakeMotor.setControl(IntakeConstants.intakeVoltageOut.withOutput(4.0));
@@ -90,8 +88,6 @@ public class IntakeSubsystem extends SubsystemBase {
     DogLog.log("ExampleIntakeSubsystem/wantedState", wantedState);
     DogLog.log("ExampleIntakeSubsystem/systemState", systemState);
     applyStates();
-    lastWantedState = wantedState;
-    lastSystemState = systemState;
 
   }
 

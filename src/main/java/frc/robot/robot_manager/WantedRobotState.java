@@ -8,7 +8,5 @@ package frc.robot.robot_manager;
 public enum WantedRobotState {
     STOW,
     INTAKE,
-    AUTO_SCORE,
-    MANUAL_SCORE;
-
+    AUTO_SCORE_L4;
 }

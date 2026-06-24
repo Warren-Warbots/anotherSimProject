@@ -14,6 +14,8 @@ import frc.robot.util.TalonFxUtils;
 
 public class PivatorSubsystem extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
+  public WantedState wantedState = WantedState.STOW;
+  private SystemState systemState = SystemState.STOWED;
 
   private double timestampAtSetState = Timer.getFPGATimestamp();
   TalonFX pivotmotor;
@@ -47,9 +49,10 @@ public class PivatorSubsystem extends SubsystemBase {
 
     elevatorMotorBack = new TalonFX(Constants.elevatorMotorBackId);
     TalonFxUtils.configureTalon(elevatorMotorBack, PivatorConstants.intakeMotorConfig);
+
   }
 
-  private enum WantedState {
+  public enum WantedState {
     STOW,
     LVL3,
     LVL4;
@@ -60,9 +63,6 @@ public class PivatorSubsystem extends SubsystemBase {
     LVL3,
     LVL4;
   }
-
-  WantedState wantedState = WantedState.STOW;
-  SystemState systemState = SystemState.STOWED;
 
   public void setWantedState(WantedState wantedState) {
     this.wantedState = wantedState;

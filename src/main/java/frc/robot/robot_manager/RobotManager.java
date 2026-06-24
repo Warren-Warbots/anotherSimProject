@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.example_pivator_subsystem.PivatorSubsystem;
 import frc.robot.example_intake_subsystem.IntakeSubsystem;
-import frc.robot.example_intake_subsystem.IntakeSubsystem.WantedState;
 import frc.robot.lights_subsystem.LightsSubsystem;
 import frc.robot.swerve.SwerveState;
 import frc.robot.swerve.SwerveSubsystem;
@@ -21,10 +20,7 @@ import frc.robot.util.FieldUtil;
 
 public class RobotManager extends SubsystemBase {
   public WantedRobotState wantedState = WantedRobotState.STOW;
-  public WantedRobotState lastWantedState = WantedRobotState.STOW;
-
   public CurrentRobotState currentState = CurrentRobotState.STOW;
-  public CurrentRobotState lastCurrentState = CurrentRobotState.STOW;
 
   public SwerveSubsystem swerve;
   public LightsSubsystem lights;
@@ -42,15 +38,15 @@ public class RobotManager extends SubsystemBase {
 
   }
 
-  public void setWantedState(WantedRobotState state) {
+  public void setWantedRobotState(WantedRobotState state) {
     DogLog.log("Robot/wantedState", state);
     timestampAtSetState = Timer.getFPGATimestamp();
     this.wantedState = state;
 
   }
 
-  public Command setWantedStateCommand(WantedRobotState wantedState) {
-    return Commands.runOnce(() -> setWantedState(wantedState));
+  public Command setWantedRobotStateCommand(WantedRobotState wantedState) {
+    return Commands.runOnce(() -> setWantedRobotState(wantedState));
   }
 
   public Command waitForStateCommand(WantedRobotState waitState) {
@@ -76,13 +72,13 @@ public class RobotManager extends SubsystemBase {
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
     hasGP = intake.getSensor();
     lights.setRobotState(wantedState);
+    currentState = handleStateTransitions();
+    applyStates();
     DogLog.log("Robot/currentState", currentState);
-
-    lastWantedState = wantedState;
 
   }
 
-  public CurrentRobotState handleStateTransitions(WantedRobotState wantedState) {
+  public CurrentRobotState handleStateTransitions() {
     return switch (wantedState) {
       case STOW: {
         yield CurrentRobotState.STOW; // always go to stow when wanted state is stow.
@@ -90,45 +86,51 @@ public class RobotManager extends SubsystemBase {
       case INTAKE: {
         yield CurrentRobotState.INTAKE;
       }
-      case AUTO_SCORE: {
-        if (true) {
-          yield CurrentRobotState.AUTO_SCORE; // specific conditions to transition
+      case AUTO_SCORE_L4: {
+        // this is where specific conditions/logic and/or safety code lives
+        if (pivot.atPosition() && hasGP && swerve.isAtDriveToPoseSetpoint()) {
+          yield CurrentRobotState.SCORE_L4;
+        } else {
+          yield CurrentRobotState.PREPARE_SCORE_L4;
         }
-      }
-      case MANUAL_SCORE: {
-        yield CurrentRobotState.MANUAL_SCORE;
       }
     };
   }
 
-  public void applyStates(CurrentRobotState currentState) {
+  public void applyStates() {
     switch (currentState) {
       case STOW -> stow();
       case INTAKE -> intake();
-      case AUTO_SCORE -> autoScore();
-      case MANUAL_SCORE -> manualScore();
+      case PREPARE_SCORE_L4 -> prepareScoreL4();
+      case SCORE_L4 -> scoreL4();
     }
     ;
   }
 
-  public void stow() {
-    intake.setWantedState(WantedState.STOP);
+  private void stow() {
+    intake.setWantedState(IntakeSubsystem.WantedState.STOP);
+    pivot.setWantedState(PivatorSubsystem.WantedState.STOW);
 
   }
 
-  public void intake() {
-    intake.setWantedState(WantedState.INTAKE);
+  private void intake() {
+    intake.setWantedState(IntakeSubsystem.WantedState.INTAKE);
+    pivot.setWantedState(PivatorSubsystem.WantedState.STOW);
 
   }
 
-  public void autoScore() {
-    // hi
-
+  private void prepareScoreL4() {
+    intake.setWantedState(IntakeSubsystem.WantedState.STOP);
+    pivot.setWantedState(PivatorSubsystem.WantedState.LVL4);
+    // transition to actively scoring is handled in handleStateTransitions()
   }
 
-  public void manualScore() {
-    // hi
-
+  private void scoreL4() {
+    intake.setWantedState(IntakeSubsystem.WantedState.OUTTAKE);
+    pivot.setWantedState(PivatorSubsystem.WantedState.LVL4);
+    if (!hasGP) {
+      setWantedRobotState(WantedRobotState.STOW);
+    }
   }
 
 }
