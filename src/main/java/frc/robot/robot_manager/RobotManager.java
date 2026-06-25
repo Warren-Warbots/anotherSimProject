@@ -7,17 +7,17 @@ package frc.robot.robot_manager;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.robot.example_pivator_subsystem.PivatorSubsystem;
+import frc.robot.autos.PathFollower;
 import frc.robot.example_intake_subsystem.IntakeSubsystem;
 import frc.robot.lights_subsystem.LightsSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.FieldUtil;
 
-public class RobotManager extends SubsystemBase {
+public class RobotManager {
   public WantedRobotState wantedState = WantedRobotState.STOW;
   public CurrentRobotState currentState = CurrentRobotState.STOW;
 
@@ -28,6 +28,10 @@ public class RobotManager extends SubsystemBase {
   private double timestampAtSetState = Timer.getFPGATimestamp();
 
   public boolean hasGP = false;
+
+  // Managed Path Following
+  private PathFollower currentPathFollower = null;
+  private Pose2d[] lastWaypoints = null;
 
   public RobotManager(SwerveSubsystem swerve, LightsSubsystem lights, PivatorSubsystem pivot, IntakeSubsystem intake) {
     this.swerve = swerve;
@@ -44,12 +48,32 @@ public class RobotManager extends SubsystemBase {
 
   }
 
-  public Command setWantedRobotStateCommand(WantedRobotState wantedState) {
-    return Commands.runOnce(() -> setWantedRobotState(wantedState));
+  /**
+   * Universal path driving method for Auto routines.
+   * Automatically handles PathFollower instantiation and waypoint tracking.
+   * Returns true when the entire array of points has been reached.
+   */
+  public boolean drivePath(Pose2d[] waypoints, double maxVel, double maxRotVel, double tolerance, boolean continuous,
+      boolean mirror) {
+    // If we've started a new path, reset the follower
+    if (waypoints != lastWaypoints) {
+      currentPathFollower = new PathFollower(this, waypoints)
+          .withMaxVelocity(maxVel)
+          .withMaxRotateVelocity(maxRotVel)
+          .withTolerance(tolerance)
+          .continuous(continuous)
+          .withMirror(mirror);
+      lastWaypoints = waypoints;
+    }
+
+    if (currentPathFollower == null)
+      return true;
+    return currentPathFollower.run();
   }
 
-  public Command waitForStateCommand(WantedRobotState waitState) {
-    return Commands.waitUntil(() -> this.wantedState == waitState);
+  /** Concise version for single-point driving in Auto */
+  public boolean drivePoint(Pose2d point, double maxVel, double tolerance, boolean mirror) {
+    return drivePath(new Pose2d[] { point }, maxVel, 3.5, tolerance, false, mirror);
   }
 
   public void startDriveToPose(Pose2d desiredPose, double translationToleranceMeters, double maxSpeed,
@@ -58,15 +82,13 @@ public class RobotManager extends SubsystemBase {
     swerve.setWantedState(SwerveSubsystem.WantedState.DRIVE_TO_POSE);
   }
 
-  public Command driveToPose(Pose2d desiredPose, double translationToleranceMeters, double maxSpeed,
-      double rotationToleranceDegrees, double maxAngularSpeed, double timeout) {
-    return Commands
-        .runOnce(() -> startDriveToPose(desiredPose, translationToleranceMeters, maxSpeed, rotationToleranceDegrees,
-            maxAngularSpeed))
-        .andThen(Commands.waitUntil(() -> swerve.isAtDriveToPoseSetpoint()).withTimeout(timeout));
+  public void startVelocityDrivetoPose(Pose2d targetPose, double maxVelocity, double maxRotateVelo,
+      double atGoalTolerance,
+      boolean isContinuous) {
+    setWantedRobotState(WantedRobotState.DRIVE_WITH_VELOCITY);
+    swerve.velocityDriveToPose(targetPose, maxVelocity, maxRotateVelo, atGoalTolerance, isContinuous);
   }
 
-  @Override
   public void periodic() {
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
     lights.setRobotState(wantedState);
@@ -75,6 +97,10 @@ public class RobotManager extends SubsystemBase {
     applyStates();
     DogLog.log("Robot/currentState", currentState);
 
+    swerve.periodic();
+    pivot.periodic();
+    intake.periodic();
+    lights.periodic();
   }
 
   public void collectInputs() {
@@ -99,6 +125,9 @@ public class RobotManager extends SubsystemBase {
           yield CurrentRobotState.PREPARE_SCORE_L4;
         }
       }
+      case DRIVE_WITH_VELOCITY: {
+        yield CurrentRobotState.DRIVE_WITH_VELOCITY;
+      }
     };
   }
 
@@ -108,6 +137,7 @@ public class RobotManager extends SubsystemBase {
       case INTAKE -> intake();
       case PREPARE_SCORE_L4 -> prepareScoreL4();
       case SCORE_L4 -> scoreL4();
+      case DRIVE_WITH_VELOCITY -> driveWithVelocity();
     }
     ;
   }
@@ -137,6 +167,10 @@ public class RobotManager extends SubsystemBase {
     if (!hasGP) {
       setWantedRobotState(WantedRobotState.STOW);
     }
+  }
+
+  private void driveWithVelocity() {
+    swerve.setWantedState(SwerveSubsystem.WantedState.DRIVE_WITH_VELOCITY);
   }
 
 }

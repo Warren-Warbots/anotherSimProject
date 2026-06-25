@@ -7,11 +7,10 @@ package frc.robot.lights_subsystem;
 import com.ctre.phoenix6.hardware.CANdle;
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.robot_manager.WantedRobotState;
 
-public class LightsSubsystem extends SubsystemBase {
+public class LightsSubsystem {
   private WantedRobotState state;
   private double timestampAtSetState = Timer.getFPGATimestamp();
   CANdle candle;
@@ -25,7 +24,6 @@ public class LightsSubsystem extends SubsystemBase {
     state = robotState;
   }
 
-  @Override
   public void periodic() {
     // This is where your state machine lives
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;

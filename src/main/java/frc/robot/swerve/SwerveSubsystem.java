@@ -28,6 +28,7 @@ import dev.doglog.DogLog;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -41,11 +42,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
+import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.swerve.generated.CompTunerConstants.TunerSwerveDrivetrain;
 import frc.robot.util.ControllerHelpers;
 import frc.robot.util.FieldUtil;
@@ -53,7 +50,7 @@ import frc.robot.util.FmsUtil;
 import frc.robot.util.LimelightHelpers;
 import frc.robot.util.LimelightHelpers.PoseEstimate;
 
-public class SwerveSubsystem extends SubsystemBase {
+public class SwerveSubsystem {
     public TunerSwerveDrivetrain drivetrain;
     private SwerveRequest.FieldCentric drive_field_rel;
     private SwerveRequest.ApplyRobotSpeeds drive_robot_rel;
@@ -66,6 +63,19 @@ public class SwerveSubsystem extends SubsystemBase {
     private double currTopRotationSpeedPercent = 1.0;
     private ChassisSpeeds driverDesiredSpeeds = new ChassisSpeeds();
     private double currentTime = 0.0;
+    private double xVelocity;
+    private double yVelocity;
+    private double rVelocity;
+    private Pose2d targetPose = new Pose2d();
+    private double tranlationMag;
+    private double maxVelocity;
+    private double maxRVelocity;
+    private boolean isContinuous;
+    private double atGoalTolerance;
+    private Rotation2d diffRotation;
+    private SlewRateLimiter xSlewRateLimiter = new SlewRateLimiter(8);
+    private SlewRateLimiter ySlewRateLimiter = new SlewRateLimiter(8);
+    private Translation2d swerveCOR = new Translation2d(0, 0);
 
     public SwerveDriveState swerveDriveState = new SwerveDriveState();
     public SwerveDriveState lastSwerveDriveState = new SwerveDriveState();
@@ -75,7 +85,7 @@ public class SwerveSubsystem extends SubsystemBase {
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
     private Telemetry telem = new Telemetry(SwerveConstants.maxSpeed);
-    private CommandXboxController driverXboxController;
+    private XboxController driverXboxController;
     private Optional<Rotation2d> lastMaintainHeadingAngle = Optional.empty();
     private double rotationJoystickLastTouched = -1;
     private double highSpeedLastTime = -1;
@@ -88,6 +98,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     private Rotation2d snapAngle = new Rotation2d();
     private Translation2d snapPoint = new Translation2d();
+    private Pose2d startingPose = new Pose2d();
 
     private boolean atGoal = false;
     private boolean timerHasBeenEnabled = false;
@@ -96,7 +107,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     private HashMap<String, Double> lastAddedVisionTimestampMap = new HashMap<String, Double>();
 
-    public SwerveSubsystem(CommandXboxController driverXboxController) {
+    public SwerveSubsystem(XboxController driverXboxController) {
 
         drivetrain = new TunerSwerveDrivetrain(SwerveConstants.swerveDrivetrainConstants,
                 SwerveConstants.FrontLeft,
@@ -132,6 +143,7 @@ public class SwerveSubsystem extends SubsystemBase {
         TELEOP_DRIVE,
         CALIBRATION,
         DRIVE_TO_POSE,
+        DRIVE_WITH_VELOCITY,
         SNAP,
         SNAP_POINT;
     }
@@ -140,6 +152,7 @@ public class SwerveSubsystem extends SubsystemBase {
         TELEOP_DRIVE,
         CALIBRATION,
         DRIVE_TO_POSE,
+        DRIVE_WITH_VELOCITY,
         SNAP,
         SNAP_POINT;
     }
@@ -149,6 +162,7 @@ public class SwerveSubsystem extends SubsystemBase {
             case TELEOP_DRIVE -> SystemState.TELEOP_DRIVE;
             case CALIBRATION -> SystemState.CALIBRATION;
             case DRIVE_TO_POSE -> SystemState.DRIVE_TO_POSE;
+            case DRIVE_WITH_VELOCITY -> SystemState.DRIVE_WITH_VELOCITY;
             case SNAP -> SystemState.SNAP;
             case SNAP_POINT -> SystemState.SNAP_POINT;
         };
@@ -159,9 +173,9 @@ public class SwerveSubsystem extends SubsystemBase {
             case TELEOP_DRIVE -> teleopDrive();
             case CALIBRATION -> calibration();
             case DRIVE_TO_POSE -> driveToPose();
+            case DRIVE_WITH_VELOCITY -> driveWithVelocity();
             case SNAP -> snap();
             case SNAP_POINT -> snapPoint();
-
         }
     }
 
@@ -223,9 +237,7 @@ public class SwerveSubsystem extends SubsystemBase {
         this.currTopRotationSpeedPercent = newTopRotationSpeed;
     }
 
-    public Command setGyroToZero() {
-        return Commands.runOnce(() -> drivetrain.getPigeon2().setYaw(0));
-    }
+    /* need to add reset gyro method */
 
     public void setSnapPoint(Translation2d snapPoint) {
         // sets the point to look at while in snap
@@ -261,6 +273,19 @@ public class SwerveSubsystem extends SubsystemBase {
                 maxAngularSpeed);
     }
 
+    public void velocityDriveToPose(Pose2d target, double maxVelocity, double maxRVelocity,
+            double atGoalTolerance, boolean isContinuous) {
+        this.targetPose = target;
+        this.maxVelocity = maxVelocity;
+        this.maxRVelocity = maxRVelocity;
+        this.isContinuous = isContinuous;
+        this.atGoalTolerance = atGoalTolerance;
+    }
+
+    public boolean velocityAtGoal() {
+        return atGoal;
+    }
+
     // todo add distance to target
 
     public boolean isAtDriveToPoseSetpoint() {
@@ -284,7 +309,11 @@ public class SwerveSubsystem extends SubsystemBase {
 
     }
 
-    @Override
+    public void resetPose(Pose2d pose) {
+        startingPose = pose;
+        drivetrain.resetPose(pose);
+    }
+
     public void periodic() {
 
         if (SwerveConstants.useLimelight) {
@@ -399,6 +428,34 @@ public class SwerveSubsystem extends SubsystemBase {
                 .withVelocityY(yComponent)
                 .withTargetDirection(driveToPoseTargetPose.getRotation())
                 .withMaxAbsRotationalRate(driveToPoseMaxAngularSpeed));
+    }
+
+    private void driveWithVelocity() {
+        Pose2d currentPose = getPose();
+        Translation2d difference = targetPose.getTranslation().minus(currentPose.getTranslation());
+        if (isContinuous) {
+            tranlationMag = maxVelocity;
+        } else {
+            tranlationMag = Math
+                    .abs(SwerveConstants.autoDriveToPoseController.calculate(difference.getNorm(), 0));
+
+        }
+        tranlationMag = Math.min(tranlationMag, maxVelocity);
+
+        diffRotation = difference.getAngle();
+        xVelocity = tranlationMag * diffRotation.getCos();
+        yVelocity = tranlationMag * diffRotation.getSin();
+        double xSlew = xVelocity;
+        double ySlew = yVelocity;
+
+        drivetrain.setControl(drive_snap
+                .withVelocityX(xSlew)
+                .withVelocityY(ySlew)
+                .withTargetDirection(targetPose.getRotation())
+                .withCenterOfRotation(swerveCOR)
+                .withMaxAbsRotationalRate(maxRVelocity));
+        atGoal = (targetPose.minus(getPose())).getTranslation().getNorm() < atGoalTolerance; // dont double
+                                                                                             // calc
     }
 
     private void calibration() {

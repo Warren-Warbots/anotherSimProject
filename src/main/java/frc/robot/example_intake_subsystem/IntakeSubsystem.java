@@ -9,11 +9,10 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.util.TalonFxUtils;
 
-public class IntakeSubsystem extends SubsystemBase {
+public class IntakeSubsystem {
   /** Creates a new IntakeSubsystem. */
 
   public WantedState wantedState = WantedState.STOP;
@@ -85,7 +84,6 @@ public class IntakeSubsystem extends SubsystemBase {
    * at Goal
    */
 
-  @Override
   public void periodic() {
     collectInputs();
     systemState = handleStateTransitions();

@@ -11,11 +11,10 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.util.TalonFxUtils;
 
-public class PivatorSubsystem extends SubsystemBase {
+public class PivatorSubsystem {
   /** Creates a new ExampleSubsystem. */
   public WantedState wantedState = WantedState.STOW;
   private SystemState systemState = SystemState.STOWED;
@@ -120,7 +119,6 @@ public class PivatorSubsystem extends SubsystemBase {
    * at Goal
    */
 
-  @Override
   public void periodic() {
     collectInputs();
     systemState = handleStateTransition();
