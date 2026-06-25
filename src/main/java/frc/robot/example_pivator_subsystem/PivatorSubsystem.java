@@ -79,12 +79,23 @@ public class PivatorSubsystem extends SubsystemBase {
     return atGoal;
   }
 
-  /*
-   * add functions IF NEEDED, try not to add to many
-   * some examples could be:
-   * public functions so that other parts of the robot can check things like:
-   * at Goal
-   */
+  private void collectInputs() {
+    currentRotation = pivotMotor.getPosition().getValueAsDouble();
+    currentHeight = elevatorMotorFront.getPosition().getValueAsDouble();
+    DogLog.log("ExamplePivatorSubsystem/currentRotation", currentRotation);
+    DogLog.log("ExamplePivatorSubsystem/currentHeight", currentHeight);
+
+    targetHeight = MathUtil.clamp(targetHeight, PivatorConstants.minElevatorHeight,
+        PivatorConstants.maxElevatorHeight);
+    targetPivotRotation = MathUtil.clamp(targetPivotRotation, PivatorConstants.minPivotRot,
+        PivatorConstants.maxPivotRot);
+    pivotAtGoal = angleError < PivatorConstants.pivotTolerance;
+    elevatorAtGoal = heightError < PivatorConstants.elevatorTolerance;
+    heightError = Math.abs(targetHeight - currentHeight);
+    angleError = Math.abs(targetPivotRotation - currentRotation);
+    atGoal = pivotAtGoal && elevatorAtGoal;
+
+  }
 
   private SystemState handleStateTransition() {
     return switch (wantedState) {
@@ -102,6 +113,22 @@ public class PivatorSubsystem extends SubsystemBase {
     }
   }
 
+  /*
+   * add functions IF NEEDED, try not to add to many
+   * some examples could be:
+   * public functions so that other parts of the robot can check things like:
+   * at Goal
+   */
+
+  @Override
+  public void periodic() {
+    collectInputs();
+    systemState = handleStateTransition();
+    applyStates();
+    double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
+
+  }
+
   private void stow() {
     targetHeight = Constants.IS_COMP_BOT ? 7.52 : 0.0;
     targetPivotRotation = Constants.IS_COMP_BOT ? 0.26 : 0.0;
@@ -115,27 +142,6 @@ public class PivatorSubsystem extends SubsystemBase {
   private void scoreLVL4() {
     targetHeight = Constants.IS_COMP_BOT ? 31.2 : 56;
     targetPivotRotation = Constants.IS_COMP_BOT ? 0.52 : 0.437763;
-  }
-
-  @Override
-  public void periodic() {
-    systemState = handleStateTransition();
-    applyStates();
-    currentHeight = elevatorMotorFront.getPosition().getValueAsDouble();
-    currentRotation = pivotMotor.getPosition().getValueAsDouble();
-
-    targetHeight = MathUtil.clamp(targetHeight, PivatorConstants.minElevatorHeight,
-        PivatorConstants.maxElevatorHeight);
-    targetPivotRotation = MathUtil.clamp(targetPivotRotation, PivatorConstants.minPivotRot,
-        PivatorConstants.maxPivotRot);
-    boolean pivotAtGoal = angleError < PivatorConstants.pivotTolerance;
-    boolean elevatorAtGoal = heightError < PivatorConstants.elevatorTolerance;
-
-    double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
-    heightError = Math.abs(targetHeight - currentHeight);
-    angleError = Math.abs(targetPivotRotation - currentRotation);
-    atGoal = pivotAtGoal && elevatorAtGoal;
-
   }
 
 }

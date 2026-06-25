@@ -69,11 +69,17 @@ public class RobotManager extends SubsystemBase {
   @Override
   public void periodic() {
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
-    hasGP = intake.getSensor();
     lights.setRobotState(wantedState);
+    collectInputs();
     currentState = handleStateTransitions();
     applyStates();
     DogLog.log("Robot/currentState", currentState);
+
+  }
+
+  public void collectInputs() {
+    DogLog.log("Robot/hasGP", intake.getSensor());
+    hasGP = intake.getSensor();
 
   }
 

@@ -44,13 +44,6 @@ public class IntakeSubsystem extends SubsystemBase {
     STOPPED;
   }
 
-  /*
-   * add functions IF NEEDED, try not to add too many.
-   * some examples could be:
-   * public functions so that other parts of the robot can check things like:
-   * at Goal
-   */
-
   public void setWantedState(WantedState wantedState) {
     this.wantedState = wantedState;
 
@@ -59,6 +52,11 @@ public class IntakeSubsystem extends SubsystemBase {
   public boolean getSensor() {
     return canrange.getIsDetected().getValue();
 
+  }
+
+  private void collectInputs() {
+    getSensor();
+    DogLog.log("ExampleIntakeSubsystem/hasGP", getSensor());
   }
 
   // this handles simple, 1:1 transitions (see robot manager for more complex
@@ -80,8 +78,16 @@ public class IntakeSubsystem extends SubsystemBase {
     }
   }
 
+  /*
+   * add functions IF NEEDED, try not to add too many.
+   * some examples could be:
+   * public functions so that other parts of the robot can check things like:
+   * at Goal
+   */
+
   @Override
   public void periodic() {
+    collectInputs();
     systemState = handleStateTransitions();
     applyStates();
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
