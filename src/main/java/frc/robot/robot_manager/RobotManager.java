@@ -91,11 +91,12 @@ public class RobotManager {
 
   public void periodic() {
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
-    lights.setRobotState(wantedState);
+    lights.setLightState(currentState);
     collectInputs();
     currentState = handleStateTransitions();
     applyStates();
     DogLog.log("Robot/currentState", currentState);
+    DogLog.log("Robot/wantedstate", wantedState);
 
     swerve.periodic();
     pivot.periodic();

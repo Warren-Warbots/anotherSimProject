@@ -42,6 +42,11 @@ public class Robot extends TimedRobot {
   }
 
   @Override
+  public void robotInit() {
+    DogLog.log("IsCompBot", Constants.IS_AT_COMP);
+  }
+
+  @Override
   public void disabledInit() {
   }
 

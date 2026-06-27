@@ -24,7 +24,8 @@ public class DriveForwardAuto extends WarbotAuto {
     private State currentState = State.START;
     private Timer stateTimer = new Timer();
 
-    private static final Pose2d[] UNDER_TRENCH_1 = { p(4.89, 0.62, 0), p(6.57, 0.80, 0) };
+    private static final Pose2d[] UNDER_TRENCH_1 = { p(4.890, 0.620, 0.1), p(6.747, 0.890, 55.1) };
+    private static final Pose2d[] NOT_UNDER_TRENCH_1 = { p(7.118, 3.416, 0.1), p(6.742, 0.889, 55.1) };
 
     public DriveForwardAuto() {
     }
@@ -40,7 +41,7 @@ public class DriveForwardAuto extends WarbotAuto {
         switch (currentState) {
             case START:
                 resetSwervePose(PathFollower.applyFlipping(UNDER_TRENCH_1[0], mirror));
-                manager.setWantedRobotState(WantedRobotState.STOW);
+                manager.setWantedRobotState(WantedRobotState.DRIVE_WITH_VELOCITY);
                 stateTimer.restart();
                 currentState = currentState.next();
                 break;

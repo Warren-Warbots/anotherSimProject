@@ -8,10 +8,11 @@ import com.ctre.phoenix6.hardware.CANdle;
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
+import frc.robot.robot_manager.CurrentRobotState;
 import frc.robot.robot_manager.WantedRobotState;
 
 public class LightsSubsystem {
-  private WantedRobotState state;
+  private CurrentRobotState state;
   private double timestampAtSetState = Timer.getFPGATimestamp();
   CANdle candle;
 
@@ -20,7 +21,7 @@ public class LightsSubsystem {
     candle.getConfigurator().apply(LightsConstants.candleConfig);
   }
 
-  public void setRobotState(WantedRobotState robotState) {
+  public void setLightState(CurrentRobotState robotState) {
     state = robotState;
   }
 
@@ -37,8 +38,11 @@ public class LightsSubsystem {
       case INTAKE:
         candle.setControl(LightsConstants.pink);
         break;
-      case AUTO_SCORE_L4:
+      case PREPARE_SCORE_L4:
         candle.setControl(LightsConstants.rainbow);
+        break;
+      case SCORE_L4:
+        candle.setControl(LightsConstants.white);
         break;
 
     }
