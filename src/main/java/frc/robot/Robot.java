@@ -34,14 +34,6 @@ public class Robot extends TimedRobot {
         new DogLogOptions().withCaptureNt(false)
             .withCaptureDs(true)
             .withNtPublish(!Constants.IS_AT_COMP));
-    configureButtonBindings();
-  }
-
-  public void configureButtonBindings() {
-    /* need to make new driver bindings */
-    // driverController.a().onTrue(manager.setWantedRobotStateCommand(WantedRobotState.STOW));
-    // driverController.b().onTrue(manager.setWantedRobotStateCommand(WantedRobotState.INTAKE));
-    // driverController.x().onTrue(manager.setWantedRobotStateCommand(WantedRobotState.AUTO_SCORE_L4));
   }
 
   @Override
@@ -82,6 +74,23 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     SmartDashboard.putNumber("TimeLeft", DriverStation.getMatchTime());
+    boolean leftTrigger = driverController.getLeftTriggerAxis() > 0.5;
+    boolean rightTrigger = driverController.getRightTriggerAxis() > 0.5;
+    boolean povLeft = driverController.getPOV() == 270;
+    boolean povRight = driverController.getPOV() == 90;
+    boolean startPressed = driverController.getStartButton();
+    boolean rightBumper = driverController.getRightBumper();
+    boolean leftBumper = driverController.getLeftBumper();
+
+    if (leftTrigger) {
+      manager.setWantedRobotState(WantedRobotState.AUTO_SCORE_L4);
+    } else if (rightTrigger) {
+      manager.setWantedRobotState(WantedRobotState.INTAKE);
+    } else if (rightBumper) {
+      manager.setWantedRobotState(WantedRobotState.STOW);
+    } else if (leftBumper) {
+      manager.setWantedRobotState(WantedRobotState.DRIVE_WITH_VELOCITY);
+    }
 
   }
 
