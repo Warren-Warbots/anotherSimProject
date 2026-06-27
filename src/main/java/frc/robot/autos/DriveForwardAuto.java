@@ -1,7 +1,7 @@
 package frc.robot.autos;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.robot_manager.WantedRobotState;
 import frc.robot.util.FieldUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -12,6 +12,8 @@ public class DriveForwardAuto extends WarbotAuto {
 
     private enum State {
         START,
+        TEST_1,
+        TEST_2,
         DONE;
 
         private static final State[] vals = values();
@@ -24,8 +26,9 @@ public class DriveForwardAuto extends WarbotAuto {
     private State currentState = State.START;
     private Timer stateTimer = new Timer();
 
-    private static final Pose2d[] UNDER_TRENCH_1 = { p(4.890, 0.620, 0.1), p(6.747, 0.890, 55.1) };
-    private static final Pose2d[] NOT_UNDER_TRENCH_1 = { p(7.118, 3.416, 0.1), p(6.742, 0.889, 55.1) };
+    private static final Pose2d[] UNDER_TRENCH_1 = { p(5.151, 0.637, 0.1), p(7.370, 0.680, 2.4) };
+    private static final Pose2d[] TEST_1 = { p(7.370, 0.680, 0.1), p(7.714, 2.909, 2.4) };
+    private static final Pose2d[] TEST_2 = { p(7.728, 2.894, 0.1), p(5.395, 2.923, 2.4) };
 
     public DriveForwardAuto() {
     }
@@ -38,12 +41,28 @@ public class DriveForwardAuto extends WarbotAuto {
 
     @Override
     public void periodic() {
+        DogLog.log("AutoState", currentState);
         switch (currentState) {
             case START:
                 resetSwervePose(PathFollower.applyFlipping(UNDER_TRENCH_1[0], mirror));
-                manager.setWantedRobotState(WantedRobotState.DRIVE_WITH_VELOCITY);
                 stateTimer.restart();
                 currentState = currentState.next();
+                break;
+
+            case TEST_1:
+                if (manager.drivePath(TEST_1, 2.0, 3.5, 0.4, true, mirror)) {
+                    if (manager.swerve.velocityAtGoal()) {
+                        currentState = currentState.next();
+                    }
+                }
+                break;
+
+            case TEST_2:
+                if (manager.drivePath(TEST_2, 2.0, 3.5, 0.4, false, mirror)) {
+                    if (manager.swerve.velocityAtGoal()) {
+                        currentState = currentState.next();
+                    }
+                }
                 break;
 
             case DONE:

@@ -52,6 +52,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledPeriodic() {
+    autos.updateMirror();
     autos.preloadAuto();
   }
 
@@ -61,10 +62,15 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    autos.updateMirror();
+    autos.preloadAuto();
+    autos.init();
   }
 
   @Override
   public void autonomousPeriodic() {
+    autos.periodic();
+    DogLog.log("isFinished", autos.isFinished());
   }
 
   @Override
