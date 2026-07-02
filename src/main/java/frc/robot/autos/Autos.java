@@ -20,7 +20,7 @@ public class Autos extends WarbotAuto {
         chooser2.setDefaultOption("DoNothing", new DoNothingAuto());
         SmartDashboard.putData("chooser1", chooser1);
         SmartDashboard.putData("chooser2", chooser2);
-        //Test Commit
+
         path1 = new DoNothingAuto();
         path1.setManager(manager);
         path2 = new DoNothingAuto();
