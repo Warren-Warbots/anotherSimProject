@@ -30,7 +30,7 @@ public class Robot extends TimedRobot {
   private Autos autos = new Autos(manager);
 
   public Robot() {
-
+//Tes
     DogLog.setOptions(
         new DogLogOptions().withCaptureNt(false)
             .withCaptureDs(true)
