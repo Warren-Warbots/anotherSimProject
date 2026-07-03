@@ -43,6 +43,7 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.Constants;
 import frc.robot.swerve.generated.CompTunerConstants.TunerSwerveDrivetrain;
 import frc.robot.util.ControllerHelpers;
 import frc.robot.util.FieldUtil;
@@ -107,7 +108,7 @@ public class SwerveSubsystem {
 
     private HashMap<String, Double> lastAddedVisionTimestampMap = new HashMap<String, Double>();
 
-    public SwerveSubsystem(XboxController driverXboxController, boolean inReplay) {
+    public SwerveSubsystem(XboxController driverXboxController) {
 
         drivetrain = new TunerSwerveDrivetrain(SwerveConstants.swerveDrivetrainConstants,
                 SwerveConstants.FrontLeft,
@@ -132,7 +133,7 @@ public class SwerveSubsystem {
 
         this.driverXboxController = driverXboxController;
 
-        if (Utils.isSimulation() && !inReplay) {
+        if (Utils.isSimulation() && Constants.robotMode == Constants.Mode.SIM) {
             startSimThread();
         }
 

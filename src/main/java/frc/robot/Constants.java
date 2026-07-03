@@ -4,8 +4,16 @@ import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 
 public class Constants {
-
         public static boolean IS_AT_COMP = false;
+
+
+        /*Change the second value to change different runtime modes for AdvantageKit such as
+        ROBOT for the real Robot,
+        SIM for physics Sim,
+        REPLAY to use replay editing from AdvantageKit.
+        Do Not Touch Mode.Real, only edit the value after the colon
+        */
+        public static Mode robotMode = Robot.isReal() ? Mode.REAL : Mode.SIM;
 
         // public static final String BETA_SERIAL_NUMBER = "-";// 0329F366
         // public static final String SERIAL_NUMBER = System.getenv("serialnum");
@@ -36,4 +44,10 @@ public class Constants {
         public static final int elevatorMotorFrontId = 22;
         public static final int elevatorMotorBackId = 23;
 
+
+        public static enum Mode{
+                REAL,
+                SIM,
+                REPLAY;
+        }
 }
