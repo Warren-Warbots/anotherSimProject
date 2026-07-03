@@ -98,10 +98,6 @@ public class RobotManager {
     DogLog.log("Robot/currentState", currentState);
     DogLog.log("Robot/wantedstate", wantedState);
 
-    swerve.periodic();
-    pivot.periodic();
-    intake.periodic();
-    lights.periodic();
   }
 
   public void collectInputs() {

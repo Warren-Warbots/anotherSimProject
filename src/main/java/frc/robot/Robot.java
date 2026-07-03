@@ -39,6 +39,10 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     manager.periodic();
+    swerve.periodic();
+    pivot.periodic();
+    intake.periodic();
+    lights.periodic();
   }
 
   @Override

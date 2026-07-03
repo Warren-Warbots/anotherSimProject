@@ -124,7 +124,8 @@ public class PivatorSubsystem {
     systemState = handleStateTransition();
     applyStates();
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
-
+    pivotMotor.setControl(PivatorConstants.pivotMotionMagicVoltage.withPosition(targetPivotRotation));
+    elevatorMotorFront.setControl(PivatorConstants.elevatorMotionMagicVoltage.withPosition(targetHeight));
   }
 
   private void stow() {
