@@ -107,7 +107,7 @@ public class SwerveSubsystem {
 
     private HashMap<String, Double> lastAddedVisionTimestampMap = new HashMap<String, Double>();
 
-    public SwerveSubsystem(XboxController driverXboxController) {
+    public SwerveSubsystem(XboxController driverXboxController, boolean inReplay) {
 
         drivetrain = new TunerSwerveDrivetrain(SwerveConstants.swerveDrivetrainConstants,
                 SwerveConstants.FrontLeft,
@@ -132,7 +132,7 @@ public class SwerveSubsystem {
 
         this.driverXboxController = driverXboxController;
 
-        if (Utils.isSimulation()) {
+        if (Utils.isSimulation() && !inReplay) {
             startSimThread();
         }
 

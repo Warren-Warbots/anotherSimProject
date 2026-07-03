@@ -17,24 +17,53 @@ import frc.robot.lights_subsystem.LightsSubsystem;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.WantedRobotState;
 import frc.robot.swerve.SwerveSubsystem;
+import frc.robot.util.FmsUtil;
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-public class Robot extends TimedRobot {
-  private XboxController driverController = new XboxController(0);
-  private SwerveSubsystem swerve = new SwerveSubsystem(driverController);
-  private LightsSubsystem lights = new LightsSubsystem();
-  private PivatorSubsystem pivot = new PivatorSubsystem();
-  private IntakeSubsystem intake = new IntakeSubsystem();
 
-  private final RobotManager manager = new RobotManager(swerve, lights, pivot, intake);
-  private Autos autos = new Autos(manager);
+public class Robot extends LoggedRobot {
+  private XboxController driverController;
+  private SwerveSubsystem swerve;
+  private LightsSubsystem lights;
+  private PivatorSubsystem pivot;
+  private IntakeSubsystem intake;
+  private RobotManager manager;
+  private Autos autos;
 
   public Robot() {
+    Logger.recordMetadata("anotherSimProject", "MyProject");
+//    DogLog.setOptions(
+//        new DogLogOptions().withCaptureNt(false)
+//            .withCaptureDs(true)
+//            .withNtPublish(!Constants.IS_AT_COMP));
+    //AdvantageKit stuff
 
-    DogLog.setOptions(
-        new DogLogOptions().withCaptureNt(false)
-            .withCaptureDs(true)
-            .withNtPublish(!Constants.IS_AT_COMP));
+    if (isReal()) {
+      Logger.addDataReceiver(new WPILOGWriter());
+      Logger.addDataReceiver(new NT4Publisher());
+    } else {
+      setUseTiming(false);
+      String logPath = LogFileUtil.findReplayLog();
+      Logger.setReplaySource(new WPILOGReader(logPath));
+      Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+    }
+    Logger.start();
+
+    boolean inReplay = !isReal();
+    driverController = new XboxController(0);
+    swerve = new SwerveSubsystem(driverController, inReplay);
+    lights = new LightsSubsystem();
+    pivot = new PivatorSubsystem();
+    intake = new IntakeSubsystem();
+    manager = new RobotManager(swerve, lights, pivot, intake);
+    autos = new Autos(manager);
   }
+
 
   @Override
   public void robotPeriodic() {
