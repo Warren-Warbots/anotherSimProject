@@ -36,27 +36,35 @@ public class Robot extends LoggedRobot {
   private Autos autos;
 
   public Robot() {
-    Logger.recordMetadata("anotherSimProject", "MyProject");
 //    DogLog.setOptions(
 //        new DogLogOptions().withCaptureNt(false)
 //            .withCaptureDs(true)
 //            .withNtPublish(!Constants.IS_AT_COMP));
-    //AdvantageKit stuff
 
-    if (isReal()) {
-      Logger.addDataReceiver(new WPILOGWriter());
-      Logger.addDataReceiver(new NT4Publisher());
-    } else {
+//   AdvantageKit stuff
+
+  Logger.recordMetadata("anotherSimProject", "MyProject");
+switch(Constants.robotMode){
+  case REAL:
+    Logger.addDataReceiver(new WPILOGWriter());
+    Logger.addDataReceiver(new NT4Publisher());
+    break;
+  case SIM:
+
+    break;
+  case REPLAY:
       setUseTiming(false);
       String logPath = LogFileUtil.findReplayLog();
       Logger.setReplaySource(new WPILOGReader(logPath));
       Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
-    }
+    break;
+}
     Logger.start();
 
+//Subsystem and other Definitions
     boolean inReplay = !isReal();
     driverController = new XboxController(0);
-    swerve = new SwerveSubsystem(driverController, inReplay);
+    swerve = new SwerveSubsystem(driverController);
     lights = new LightsSubsystem();
     pivot = new PivatorSubsystem();
     intake = new IntakeSubsystem();
@@ -73,6 +81,7 @@ public class Robot extends LoggedRobot {
     intake.periodic();
     lights.periodic();
   }
+
 
   @Override
   public void robotInit() {
