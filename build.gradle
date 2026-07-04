@@ -140,7 +140,7 @@ test {
 
 
 //Edit this value to show Sim GUI
-wpi.sim.addGui().defaultEnabled = true
+wpi.sim.addGui().defaultEnabled = false
 wpi.sim.addDriverstation()
 
 

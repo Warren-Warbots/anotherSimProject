@@ -13,6 +13,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.util.TalonFxUtils;
+import org.littletonrobotics.junction.Logger;
 
 public class PivatorSubsystem {
   /** Creates a new ExampleSubsystem. */
@@ -81,8 +82,8 @@ public class PivatorSubsystem {
   private void collectInputs() {
     currentRotation = pivotMotor.getPosition().getValueAsDouble();
     currentHeight = elevatorMotorFront.getPosition().getValueAsDouble();
-    DogLog.log("ExamplePivatorSubsystem/currentRotation", currentRotation);
-    DogLog.log("ExamplePivatorSubsystem/currentHeight", currentHeight);
+    Logger.recordOutput("ExamplePivatorSubsystem/currentRotation", currentRotation);
+    Logger.recordOutput("ExamplePivatorSubsystem/currentHeight", currentHeight);
 
     targetHeight = MathUtil.clamp(targetHeight, PivatorConstants.minElevatorHeight,
         PivatorConstants.maxElevatorHeight);

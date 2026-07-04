@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.robot_manager.CurrentRobotState;
 import frc.robot.robot_manager.WantedRobotState;
+import org.littletonrobotics.junction.Logger;
 
 public class LightsSubsystem {
   private CurrentRobotState state;
@@ -28,7 +29,7 @@ public class LightsSubsystem {
   public void periodic() {
     // This is where your state machine lives
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
-    DogLog.log("LightsSubsystem/state", state);
+    Logger.recordOutput("LightsSubsystem/state", state);
 
     switch (state) {
 

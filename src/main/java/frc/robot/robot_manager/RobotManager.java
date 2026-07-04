@@ -16,6 +16,7 @@ import frc.robot.example_intake_subsystem.IntakeSubsystem;
 import frc.robot.lights_subsystem.LightsSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.FieldUtil;
+import org.littletonrobotics.junction.Logger;
 
 public class RobotManager {
   public WantedRobotState wantedState = WantedRobotState.STOW;
@@ -42,7 +43,7 @@ public class RobotManager {
   }
 
   public void setWantedRobotState(WantedRobotState state) {
-    DogLog.log("Robot/wantedState", state);
+    Logger.recordOutput("Robot/wantedState", state);
     timestampAtSetState = Timer.getFPGATimestamp();
     this.wantedState = state;
 
@@ -95,13 +96,13 @@ public class RobotManager {
     collectInputs();
     currentState = handleStateTransitions();
     applyStates();
-    DogLog.log("Robot/currentState", currentState);
-    DogLog.log("Robot/wantedstate", wantedState);
+    Logger.recordOutput("Robot/currentState", currentState);
+    Logger.recordOutput("Robot/wantedstate", wantedState);
 
   }
 
   public void collectInputs() {
-    DogLog.log("Robot/hasGP", intake.getSensor());
+    Logger.recordOutput("Robot/hasGP", intake.getSensor());
     hasGP = intake.getSensor();
 
   }

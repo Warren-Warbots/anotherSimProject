@@ -11,6 +11,7 @@ import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.util.TalonFxUtils;
+import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem {
   /** Creates a new IntakeSubsystem. */
@@ -55,7 +56,7 @@ public class IntakeSubsystem {
 
   private void collectInputs() {
     getSensor();
-    DogLog.log("ExampleIntakeSubsystem/hasGP", getSensor());
+    Logger.recordOutput("ExampleIntakeSubsystem/hasGP", getSensor());
   }
 
   // this handles simple, 1:1 transitions (see robot manager for more complex
@@ -90,8 +91,8 @@ public class IntakeSubsystem {
     applyStates();
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
     // this is where logging goes
-    DogLog.log("ExampleIntakeSubsystem/wantedState", wantedState);
-    DogLog.log("ExampleIntakeSubsystem/systemState", systemState);
+    Logger.recordOutput("ExampleIntakeSubsystem/wantedState", wantedState);
+    Logger.recordOutput("ExampleIntakeSubsystem/systemState", systemState);
 
   }
 

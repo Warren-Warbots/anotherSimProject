@@ -45,21 +45,25 @@ public class Robot extends LoggedRobot {
 
   Logger.recordMetadata("anotherSimProject", "MyProject");
 switch(Constants.robotMode){
-  case REAL:
+  case REAL, SIM:
     Logger.addDataReceiver(new WPILOGWriter());
     Logger.addDataReceiver(new NT4Publisher());
     break;
-  case SIM:
 
-    break;
-  case REPLAY:
+    case REPLAY:
       setUseTiming(false);
       String logPath = LogFileUtil.findReplayLog();
       Logger.setReplaySource(new WPILOGReader(logPath));
       Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
     break;
 }
+
     Logger.start();
+    DogLog.setOptions(
+        new DogLogOptions().withCaptureNt(false)
+            .withCaptureDs(true)
+            .withNtPublish(false));
+    
 
 //Subsystem and other Definitions
     boolean inReplay = !isReal();
@@ -85,7 +89,7 @@ switch(Constants.robotMode){
 
   @Override
   public void robotInit() {
-    DogLog.log("IsCompBot", Constants.IS_AT_COMP);
+    Logger.recordOutput("IsCompBot", Constants.IS_AT_COMP);
   }
 
   @Override
@@ -112,7 +116,7 @@ switch(Constants.robotMode){
   @Override
   public void autonomousPeriodic() {
     autos.periodic();
-    DogLog.log("isFinished", autos.isFinished());
+    Logger.recordOutput("isFinished", autos.isFinished());
   }
 
   @Override

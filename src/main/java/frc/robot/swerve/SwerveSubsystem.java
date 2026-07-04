@@ -50,6 +50,7 @@ import frc.robot.util.FieldUtil;
 import frc.robot.util.FmsUtil;
 import frc.robot.util.LimelightHelpers;
 import frc.robot.util.LimelightHelpers.PoseEstimate;
+import org.littletonrobotics.junction.Logger;
 
 public class SwerveSubsystem {
     public TunerSwerveDrivetrain drivetrain;
@@ -291,15 +292,15 @@ public class SwerveSubsystem {
 
     public boolean isAtDriveToPoseSetpoint() {
 
-        DogLog.log("Swerve/isAlignAtGoal/distance",
+        Logger.recordOutput("Swerve/isAlignAtGoal/distance",
                 getPose().getTranslation().getDistance(driveToPoseTargetPose.getTranslation()));
-        DogLog.log("Swerve/isAlignAtGoal/angle",
+        Logger.recordOutput("Swerve/isAlignAtGoal/angle",
                 FieldUtil.angleBetweenRotation2ds(driveToPoseTargetPose.getRotation(), getPose().getRotation()));
 
-        DogLog.log("Swerve/isAlignAtGoal/distanceBool",
+        Logger.recordOutput("Swerve/isAlignAtGoal/distanceBool",
                 getPose().getTranslation()
                         .getDistance(driveToPoseTargetPose.getTranslation()) < driveToPoseTranslationToleranceMeters);
-        DogLog.log("Swerve/isAlignAtGoal/angleBool",
+        Logger.recordOutput("Swerve/isAlignAtGoal/angleBool",
                 FieldUtil.angleBetweenRotation2ds(driveToPoseTargetPose.getRotation(),
                         getPose().getRotation()) < driveToPoseRotationToleranceDegrees);
 
@@ -331,13 +332,13 @@ public class SwerveSubsystem {
         currentTime = Timer.getFPGATimestamp();
         double robotSpeed = new Translation2d(swerveDriveState.Speeds.vxMetersPerSecond,
                 swerveDriveState.Speeds.vyMetersPerSecond).getNorm();
-        DogLog.log("Swerve/ModuleStates", swerveDriveState.ModuleStates);
-        DogLog.log("Swerve/EstimatedPose", swerveDriveState.Pose);
-        DogLog.log("Swerve/TopSpeedPercent", currTopSpeedPercent);
-        DogLog.log("Swerve/TopRotationSpeedPercent", currTopRotationSpeedPercent);
-        DogLog.log("Swerve/SystemState", systemState);
+        Logger.recordOutput("Swerve/ModuleStates", swerveDriveState.ModuleStates);
+        Logger.recordOutput("Swerve/EstimatedPose", swerveDriveState.Pose);
+        Logger.recordOutput("Swerve/TopSpeedPercent", currTopSpeedPercent);
+        Logger.recordOutput("Swerve/TopRotationSpeedPercent", currTopRotationSpeedPercent);
+        Logger.recordOutput("Swerve/SystemState", systemState);
 
-        DogLog.log("Swerve/Speeds", swerveDriveState.Speeds);
+        Logger.recordOutput("Swerve/Speeds", swerveDriveState.Speeds);
 
         getTeleopDriveSpeeds();
 
@@ -357,7 +358,7 @@ public class SwerveSubsystem {
             lastMaintainHeadingAngle = Optional.empty();
         }
 
-        DogLog.log("Swerve/TeleopDesiredSpeeds", driverDesiredSpeeds);
+        Logger.recordOutput("Swerve/TeleopDesiredSpeeds", driverDesiredSpeeds);
     }
 
     private void teleopDrive() {
@@ -417,12 +418,12 @@ public class SwerveSubsystem {
         double xComponent = velocityOutput * directionOfTravel.getCos();
         double yComponent = velocityOutput * directionOfTravel.getSin();
 
-        DogLog.log("Swerve/DriveToPoint/xVelocitySetpoint", xComponent);
-        DogLog.log("Swerve/DriveToPoint/yVelocitySetpoint", yComponent);
-        DogLog.log("Swerve/DriveToPoint/velocityOutput", velocityOutput);
-        DogLog.log("Swerve/DriveToPoint/linearDistance", distanceToGoal);
-        DogLog.log("Swerve/DriveToPoint/directionOfTravel", directionOfTravel);
-        DogLog.log("Swerve/DriveToPoint/desiredPoint", driveToPoseTargetPose);
+        Logger.recordOutput("Swerve/DriveToPoint/xVelocitySetpoint", xComponent);
+        Logger.recordOutput("Swerve/DriveToPoint/yVelocitySetpoint", yComponent);
+        Logger.recordOutput("Swerve/DriveToPoint/velocityOutput", velocityOutput);
+        Logger.recordOutput("Swerve/DriveToPoint/linearDistance", distanceToGoal);
+        Logger.recordOutput("Swerve/DriveToPoint/directionOfTravel", directionOfTravel);
+        Logger.recordOutput("Swerve/DriveToPoint/desiredPoint", driveToPoseTargetPose);
 
         drivetrain.setControl(drive_snap
                 .withVelocityX(xComponent)
@@ -479,9 +480,9 @@ public class SwerveSubsystem {
                 LimelightHelpers.SetFiducialDownscalingOverride(limelightName, 0);
                 LimelightHelpers.SetThrottle(limelightName, 0);
             }
-            DogLog.log("Swerve/" + limelightName + "HeartBeat",
+            Logger.recordOutput("Swerve/" + limelightName + "HeartBeat",
                     NetworkTableInstance.getDefault().getTable(limelightName).getEntry("hb").getDouble(0));
-            DogLog.log("Swerve/" + limelightName + "TV", LimelightHelpers.getTV(limelightName));
+            Logger.recordOutput("Swerve/" + limelightName + "TV", LimelightHelpers.getTV(limelightName));
             if (limelightName.equals("limelight-hp")) {
 
                 continue;
@@ -505,7 +506,7 @@ public class SwerveSubsystem {
                 continue;
             }
 
-            DogLog.log("Swerve/" + limelightName + "_avgTagArea", estimatePoseMT1.avgTagArea);
+            Logger.recordOutput("Swerve/" + limelightName + "_avgTagArea", estimatePoseMT1.avgTagArea);
             if (estimatePoseMT1.avgTagArea >= (isDisabled ? 0.1 : 1.5) && !limelightName.equals("limelight-hp")) {
 
                 poseToAdd = estimatePoseMT1;
@@ -516,9 +517,9 @@ public class SwerveSubsystem {
                 stdDevs = SwerveConstants.megaTag2stdDev;
             }
 
-            DogLog.log("Swerve/" + limelightName + "_PoseMT2", estimatePoseMT2.pose);
-            DogLog.log("Swerve/" + limelightName + "_PoseMT1", estimatePoseMT1.pose);
-            DogLog.log("Swerve/" + limelightName + "_lastAddedPose", poseToAdd.pose);
+            Logger.recordOutput("Swerve/" + limelightName + "_PoseMT2", estimatePoseMT2.pose);
+            Logger.recordOutput("Swerve/" + limelightName + "_PoseMT1", estimatePoseMT1.pose);
+            Logger.recordOutput("Swerve/" + limelightName + "_lastAddedPose", poseToAdd.pose);
 
             drivetrain.addVisionMeasurement(poseToAdd.pose, Utils.fpgaToCurrentTime(poseToAdd.timestampSeconds),
                     stdDevs);
