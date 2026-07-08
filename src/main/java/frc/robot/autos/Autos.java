@@ -35,6 +35,9 @@ public class Autos extends WarbotAuto {
 
         chooser2.addOption("DriveForwardAuto", new DriveForwardAuto());
 
+        // This is where the auto selector is created for the dashboard, alse calling
+        // each auto to set it in the auto selector
+
     }
 
     public void preloadAuto() {
@@ -49,6 +52,8 @@ public class Autos extends WarbotAuto {
 
         path1.setManager(manager);
         path2.setManager(manager);
+
+        // This function set the autos we selected on the dashboard
     }
 
     public void init() {

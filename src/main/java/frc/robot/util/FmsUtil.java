@@ -15,5 +15,4 @@ public class FmsUtil {
         return alliance == Alliance.Red;
     }
 
-
 }

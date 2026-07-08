@@ -22,13 +22,13 @@ public class IntakeSubsystem {
   private double timestampAtSetState = Timer.getFPGATimestamp();
 
   TalonFX intakeMotor;
-  CANrange canrange = new CANrange(Constants.CANrange_ID);
+  CANrange canrange = new CANrange(Constants.intakeCANrangeId);
 
   public IntakeSubsystem() {
     // initialize motors here
     // step 1 is make config object for each motor in subsystem constants folder
     // step 2 is to use configure talon function to apply config to that motor
-    intakeMotor = new TalonFX(Constants.Intake_Motor_ID);
+    intakeMotor = new TalonFX(Constants.intakeMotorId);
     TalonFxUtils.configureTalon(intakeMotor, IntakeConstants.intakeMotorConfig);
   }
 

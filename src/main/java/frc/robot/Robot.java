@@ -16,6 +16,7 @@ import frc.robot.example_intake_subsystem.IntakeSubsystem;
 import frc.robot.lights_subsystem.LightsSubsystem;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.WantedRobotState;
+import frc.robot.simulation.PhysicsSim;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.FmsUtil;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -63,7 +64,7 @@ switch(Constants.robotMode){
         new DogLogOptions().withCaptureNt(false)
             .withCaptureDs(true)
             .withNtPublish(false));
-    
+
 
 //Subsystem and other Definitions
     boolean inReplay = !isReal();
@@ -131,6 +132,8 @@ switch(Constants.robotMode){
   @Override
   public void teleopPeriodic() {
     SmartDashboard.putNumber("TimeLeft", DriverStation.getMatchTime());
+    // This is were we call all the driver and operator controllers for use during
+    // teleop
     boolean leftTrigger = driverController.getLeftTriggerAxis() > 0.5;
     boolean rightTrigger = driverController.getRightTriggerAxis() > 0.5;
     boolean povLeft = driverController.getPOV() == 270;
@@ -169,6 +172,17 @@ switch(Constants.robotMode){
   }
 
   @Override
+  public void simulationInit() {
+    // this initializes the physics sim in simulation
+    PhysicsSim.getInstance().addSimProfile(pivot.pivotSimProfile);
+    PhysicsSim.getInstance().addSimProfile(pivot.frontElevatorSimProfile);
+
+  }
+
+  @Override
   public void simulationPeriodic() {
+    // this continuously runs the physics sim in simulation
+    PhysicsSim.getInstance().run();
+
   }
 }
