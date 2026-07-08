@@ -143,6 +143,7 @@ public class SwerveSubsystem {
         SNAP_POINT;
     }
 
+    // this handles simple, 1:1 transitions
     private SystemState handleStateTransitions() {
         return switch (wantedState) {
             case TELEOP_DRIVE -> SystemState.TELEOP_DRIVE;
@@ -154,6 +155,7 @@ public class SwerveSubsystem {
         };
     }
 
+    // this applies function based on systemState
     public void applyStates() {
         switch (systemState) {
             case TELEOP_DRIVE -> teleopDrive();
@@ -443,6 +445,10 @@ public class SwerveSubsystem {
                 .withMaxAbsRotationalRate(maxRVelocity));
         atGoal = (targetPose.minus(getPose())).getTranslation().getNorm() < atGoalTolerance; // dont double
                                                                                              // calc
+        // This function is used for when following a path it maintains our swerve
+        // velocity thoughout the path
+        // isContinous is what set to know which points to stop at and which to maintian
+        // out velocity
     }
 
     private void calibration() {

@@ -90,6 +90,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     SmartDashboard.putNumber("TimeLeft", DriverStation.getMatchTime());
+    // This is were we call all the driver and operator controllers for use during
+    // teleop
     boolean leftTrigger = driverController.getLeftTriggerAxis() > 0.5;
     boolean rightTrigger = driverController.getRightTriggerAxis() > 0.5;
     boolean povLeft = driverController.getPOV() == 270;

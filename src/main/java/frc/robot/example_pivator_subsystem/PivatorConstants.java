@@ -19,6 +19,15 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public class PivatorConstants {
+
+        /**
+         * IDs go in global constants file, not here.
+         * DO NOT JUST COPY PASTE THIS FOR A SUBSYSTEM, this is an example of how to
+         * build a config object.
+         * each subsystem needs its own config. Just copy "public static
+         * TalonFXConfiguration <name of motor> = new TalonFXConfiguration()" and add
+         * configs as needed
+         */
         public static double minElevatorHeight = 0;
         public static double maxElevatorHeight = 31.375;
         public static double elevatorTolerance = 0.5;

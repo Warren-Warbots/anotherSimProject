@@ -12,6 +12,7 @@ public class DriveForwardAuto extends WarbotAuto {
         TEST_2,
         DONE;
 
+        // The states are sequenced to the order they are running in
         private static final State[] vals = values();
 
         public State next() {
@@ -25,6 +26,8 @@ public class DriveForwardAuto extends WarbotAuto {
     private static final Pose2d[] UNDER_TRENCH_1 = { p(5.151, 0.637, 0.1), p(7.370, 0.680, 2.4) };
     private static final Pose2d[] TEST_1 = { p(7.370, 0.680, 0.1), p(7.714, 2.909, 2.4) };
     private static final Pose2d[] TEST_2 = { p(7.728, 2.894, 0.1), p(5.395, 2.923, 2.4) };
+    // Each path is created using a pose2d which can be edited by warPath instead of
+    // finding each point individually, you can also add as many points to one path
 
     public DriveForwardAuto() {
     }
@@ -43,13 +46,22 @@ public class DriveForwardAuto extends WarbotAuto {
                 resetSwervePose(PathFollower.applyFlipping(UNDER_TRENCH_1[0], mirror));
                 stateTimer.restart();
                 currentState = currentState.next();
+                // In the starting state we set the starting point of our path,
+                // which is only needed to be set once
                 break;
 
             case TEST_1:
                 if (manager.drivePath(TEST_1, 2.0, 3.5, 0.4, true, mirror)) {
+                    // After running the starting state you can follow each path using the drivePath
+                    // function
                     if (manager.swerve.velocityAtGoal()) {
                         currentState = currentState.next();
+                        // This if statement waits till the path is completed to go to the next state
+
+                        // Use this if statement if you’re calling a system state like intake, but not
+                        // if you’re setting the next state to a path.
                     }
+
                 }
                 break;
 
@@ -63,6 +75,7 @@ public class DriveForwardAuto extends WarbotAuto {
 
             case DONE:
                 isFinished = true;
+                // This State is to end out auto
                 break;
         }
     }

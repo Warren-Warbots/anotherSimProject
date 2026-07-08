@@ -125,6 +125,7 @@ public class RobotManager {
     };
   }
 
+  // this applies Function based on RobotState
   private void applyStates() {
     switch (currentState) {
       case STOW -> stow();
