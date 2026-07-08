@@ -96,6 +96,8 @@ public class PivatorSubsystem {
 
   }
 
+  // this handles simple, 1:1 transitions (see robot manager for more complex
+  // transitions)
   private SystemState handleStateTransition() {
     return switch (wantedState) {
       case STOW -> SystemState.STOWED;
@@ -104,6 +106,7 @@ public class PivatorSubsystem {
     };
   }
 
+  // this applies function based on systemState
   private void applyStates() {
     switch (systemState) {
       case STOWED -> stow();

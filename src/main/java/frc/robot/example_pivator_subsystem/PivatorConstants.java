@@ -22,6 +22,15 @@ import frc.robot.Constants;
 
 public class PivatorConstants {
 
+        /**
+         * IDs go in global constants file, not here.
+         * DO NOT JUST COPY PASTE THIS FOR A SUBSYSTEM, this is an example of how to
+         * build a config object.
+         * each subsystem needs its own config. Just copy "public static
+         * TalonFXConfiguration <name of motor> = new TalonFXConfiguration()" and add
+         * configs as needed
+         */
+
         public static double minElevatorHeight = 0;
         public static double maxElevatorHeight = 31.375;
 
