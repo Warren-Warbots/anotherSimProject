@@ -3,16 +3,6 @@ package frc.robot.simulation;
 import java.util.ArrayList;
 
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.hardware.TalonFX;
-
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.KalmanFilter;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.system.LinearSystem;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import frc.robot.example_pivator_subsystem.PivatorSubsystem;
 
 /**
  * Manages physics simulation for CTRE products.
@@ -45,40 +35,12 @@ public class PhysicsSim {
 
     }
 
-    // public void addPivot(TalonFX talonFX, final double rotorInertia) {
-    // if (talonFX != null) {
-    // PivotSimProfile simPivot = new PivotSimProfile(talonFX, rotorInertia);
-    // _simProfiles.add(simPivot);
-    // }
-    // }
-
-    // private final LinearSystem<N1, N1, N1> m_flywheelPlant =
-    // LinearSystemId.createFlywheelSystem(
-    // DCMotor.getKrakenX60Foc(1), GroundPivotSimProfile.kFlywheelMomentOfInertia,
-    // GroundPivotSimProfile.kFlywheelGearing);
-
-    // public final KalmanFilter<N1, N1, N1> m_observer = new KalmanFilter<>(
-    // Nat.N1(),
-    // Nat.N1(),
-    // m_flywheelPlant,
-    // VecBuilder.fill(3.0), // How accurate we think our model is
-    // VecBuilder.fill(0.01), // How accurate we think our encoder
-    // // data is
-    // 0.020);
-
-    // public void addGroundPivot(TalonFX talonFX, final double rotorInertia) {
-    // if (talonFX != null) {
-    // GroundPivotSimProfile simGroundPivot = new GroundPivotSimProfile(talonFX,
-    // rotorInertia);
-    // _simProfiles.add(simGroundPivot);
-    // }
-    // }
-
     /**
      * Runs the simulator:
      * - enable the robot
      * - simulate sensors
      */
+
     public void run() {
         // Simulate devices
         for (SimProfile simProfile : _simProfiles) {

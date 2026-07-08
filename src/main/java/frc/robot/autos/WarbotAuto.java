@@ -1,13 +1,10 @@
 package frc.robot.autos;
 
-import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.Constants;
 import frc.robot.robot_manager.RobotManager;
-import frc.robot.util.LimelightHelpers;
 
 public abstract class WarbotAuto {
 

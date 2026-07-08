@@ -2,10 +2,6 @@ package frc.robot.autos;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
-import frc.robot.robot_manager.WantedRobotState;
-import frc.robot.util.FieldUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 
 public class DriveForwardAuto extends WarbotAuto {

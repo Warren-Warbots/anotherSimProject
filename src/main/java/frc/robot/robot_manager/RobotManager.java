@@ -6,10 +6,7 @@ package frc.robot.robot_manager;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
-
 import frc.robot.example_pivator_subsystem.PivatorSubsystem;
 import frc.robot.autos.PathFollower;
 import frc.robot.example_intake_subsystem.IntakeSubsystem;
@@ -95,8 +92,8 @@ public class RobotManager {
     collectInputs();
     currentState = handleStateTransitions();
     applyStates();
-    DogLog.log("Robot/currentState", currentState);
-    DogLog.log("Robot/wantedstate", wantedState);
+    DogLog.log("Robot/currentState", currentState.name());
+    DogLog.log("Robot/wantedstate", wantedState.name());
 
   }
 
@@ -143,6 +140,7 @@ public class RobotManager {
   private void stow() {
     intake.setWantedState(IntakeSubsystem.WantedState.STOP);
     pivot.setWantedState(PivatorSubsystem.WantedState.STOW);
+    swerve.setWantedState(SwerveSubsystem.WantedState.TELEOP_DRIVE);
 
   }
 

@@ -3,69 +3,74 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot.example_pivator_subsystem;
 
+import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
-
 import dev.doglog.DogLog;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
+import frc.robot.simulation.SimMech;
+import frc.robot.simulation.TalonFXSimProfile;
 import frc.robot.util.TalonFxUtils;
 
 public class PivatorSubsystem {
-  /** Creates a new ExampleSubsystem. */
+  /** Creates a new PivatorSubsystem. */
   public WantedState wantedState = WantedState.STOW;
   private SystemState systemState = SystemState.STOWED;
 
   private double timestampAtSetState = Timer.getFPGATimestamp();
+
+  private final SimMech simMech = new SimMech();
+  public static final double rotorInertia = 0.02;
+  public TalonFXSimProfile pivotSimProfile;
+  public TalonFXSimProfile frontElevatorSimProfile;
+
   TalonFX pivotMotor;
-  TalonFX elevatorMotorFront;
-  TalonFX elevatorMotorBack;
+  TalonFX elevatorFrontMotor;
+  TalonFX elevatorBackMotor;
   CANcoder pivotCANcoder;
 
-  double targetPivotRotation = 0.0;
+  double targetRotation = 0.0;
   double targetHeight = 0.0;
   double currentRotation = 0.0;
   double currentHeight = 0.0;
-
-  double angleError;
-  double heightError;
 
   boolean atGoal = false;
   boolean pivotAtGoal = false;
   boolean elevatorAtGoal = false;
 
   public PivatorSubsystem() {
-
-    pivotCANcoder = new CANcoder(Constants.pivotCANcoder);
-
+    /*
+     * initialize motors here
+     * step 1 is make config object for each motor in subsystem constants folder
+     * step 2 is to use configure talon function to apply config to that motor
+     * intakeMotor = new TalonFX(Constants.intake_Motor_ID);
+     */
     pivotMotor = new TalonFX(Constants.pivotMotorId);
     TalonFxUtils.configureTalon(pivotMotor, PivatorConstants.pivotMotorConfig);
+    elevatorFrontMotor = new TalonFX(Constants.elevatorFrontMotorId);
+    TalonFxUtils.configureTalon(elevatorFrontMotor, PivatorConstants.elevatorFrontMotorConfig);
+    elevatorBackMotor = new TalonFX(Constants.elevatorBackMotorId);
+    TalonFxUtils.configureTalon(elevatorBackMotor, PivatorConstants.elevatorBackMotorConfig);
+    pivotCANcoder = new CANcoder(Constants.pivotCANcoderId);
 
-    elevatorMotorFront = new TalonFX(Constants.elevatorMotorFrontId);
-    TalonFxUtils.configureTalon(elevatorMotorFront, PivatorConstants.elevatorMotorFrontConfig);
+    elevatorFrontMotor.setPosition(0);
+    elevatorBackMotor.setPosition(0);
+    elevatorBackMotor.setControl(new Follower(elevatorFrontMotor.getDeviceID(), MotorAlignmentValue.Opposed));
 
-    elevatorMotorBack = new TalonFX(Constants.elevatorMotorBackId);
-    TalonFxUtils.configureTalon(elevatorMotorBack, PivatorConstants.elevatorMotorBackConfig);
-
-    elevatorMotorFront.setPosition(0);
-    elevatorMotorBack.setPosition(0);
-
-    elevatorMotorBack.setControl(new Follower(elevatorMotorFront.getDeviceID(), MotorAlignmentValue.Opposed));
-
+    pivotSimProfile = new TalonFXSimProfile(pivotMotor, rotorInertia);
+    frontElevatorSimProfile = new TalonFXSimProfile(elevatorFrontMotor, rotorInertia);
   }
 
   public enum WantedState {
     STOW,
-    LVL3,
     LVL4;
   }
 
   private enum SystemState {
     STOWED,
-    LVL3,
     LVL4;
   }
 
@@ -80,20 +85,11 @@ public class PivatorSubsystem {
 
   private void collectInputs() {
     currentRotation = pivotMotor.getPosition().getValueAsDouble();
-    currentHeight = elevatorMotorFront.getPosition().getValueAsDouble();
-    DogLog.log("ExamplePivatorSubsystem/currentRotation", currentRotation);
-    DogLog.log("ExamplePivatorSubsystem/currentHeight", currentHeight);
-
-    targetHeight = MathUtil.clamp(targetHeight, PivatorConstants.minElevatorHeight,
-        PivatorConstants.maxElevatorHeight);
-    targetPivotRotation = MathUtil.clamp(targetPivotRotation, PivatorConstants.minPivotRot,
-        PivatorConstants.maxPivotRot);
-    pivotAtGoal = angleError < PivatorConstants.pivotTolerance;
-    elevatorAtGoal = heightError < PivatorConstants.elevatorTolerance;
-    heightError = Math.abs(targetHeight - currentHeight);
-    angleError = Math.abs(targetPivotRotation - currentRotation);
+    currentHeight = elevatorFrontMotor.getPosition().getValueAsDouble();
     atGoal = pivotAtGoal && elevatorAtGoal;
 
+    // add logging here
+    DogLog.log("ExamplePivatorSubsystem/systemState", systemState.name());
   }
 
   // this handles simple, 1:1 transitions (see robot manager for more complex
@@ -101,7 +97,6 @@ public class PivatorSubsystem {
   private SystemState handleStateTransition() {
     return switch (wantedState) {
       case STOW -> SystemState.STOWED;
-      case LVL3 -> SystemState.LVL3;
       case LVL4 -> SystemState.LVL4;
     };
   }
@@ -110,7 +105,6 @@ public class PivatorSubsystem {
   private void applyStates() {
     switch (systemState) {
       case STOWED -> stow();
-      case LVL3 -> scoreLVL3();
       case LVL4 -> scoreLVL4();
     }
   }
@@ -127,23 +121,21 @@ public class PivatorSubsystem {
     systemState = handleStateTransition();
     applyStates();
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
-    pivotMotor.setControl(PivatorConstants.pivotMotionMagicVoltage.withPosition(targetPivotRotation));
-    elevatorMotorFront.setControl(PivatorConstants.elevatorMotionMagicVoltage.withPosition(targetHeight));
+    pivotMotor.setControl(PivatorConstants.pivotPositionVoltage.withPosition(targetRotation));
+    elevatorFrontMotor.setControl(PivatorConstants.elevatorMotionMagicVoltage.withPosition(targetHeight));
+    if (Utils.isSimulation()) {
+      simMech.updatePivot(pivotMotor.getPosition(), elevatorFrontMotor.getPosition());
+    }
   }
 
   private void stow() {
     targetHeight = Constants.IS_COMP_BOT ? 7.52 : 0.0;
-    targetPivotRotation = Constants.IS_COMP_BOT ? 0.26 : 0.0;
-  }
-
-  private void scoreLVL3() {
-    targetHeight = Constants.IS_COMP_BOT ? 17.25 : 26.4;
-    targetPivotRotation = Constants.IS_COMP_BOT ? 0.4898 : 0.452881;
+    targetRotation = Constants.IS_COMP_BOT ? 0.26 : 0.0;
   }
 
   private void scoreLVL4() {
     targetHeight = Constants.IS_COMP_BOT ? 31.2 : 56;
-    targetPivotRotation = Constants.IS_COMP_BOT ? 0.52 : 0.437763;
+    targetRotation = Constants.IS_COMP_BOT ? 0.52 : 0.437763;
   }
 
 }

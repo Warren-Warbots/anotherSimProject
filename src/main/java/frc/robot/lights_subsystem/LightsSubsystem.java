@@ -9,7 +9,6 @@ import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.robot_manager.CurrentRobotState;
-import frc.robot.robot_manager.WantedRobotState;
 
 public class LightsSubsystem {
   private CurrentRobotState state;
@@ -17,7 +16,7 @@ public class LightsSubsystem {
   CANdle candle;
 
   public LightsSubsystem() {
-    candle = new CANdle(Constants.Lights_ID);
+    candle = new CANdle(Constants.lightsId);
     candle.getConfigurator().apply(LightsConstants.candleConfig);
   }
 
