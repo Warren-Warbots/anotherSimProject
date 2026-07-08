@@ -21,13 +21,15 @@ public class IntakeSubsystem {
   private double timestampAtSetState = Timer.getFPGATimestamp();
 
   TalonFX intakeMotor;
-  CANrange canrange = new CANrange(Constants.CANrange_ID);
+  CANrange canrange = new CANrange(Constants.intake_CANrange_ID);
 
   public IntakeSubsystem() {
-    // initialize motors here
-    // step 1 is make config object for each motor in subsystem constants folder
-    // step 2 is to use configure talon function to apply config to that motor
-    intakeMotor = new TalonFX(Constants.Intake_Motor_ID);
+    /*
+     * initialize motors here
+     * step 1 is make config object for each motor in subsystem constants folder
+     * step 2 is to use configure talon function to apply config to that motor
+     * intakeMotor = new TalonFX(Constants.intake_Motor_ID);
+     */
     TalonFxUtils.configureTalon(intakeMotor, IntakeConstants.intakeMotorConfig);
   }
 
@@ -55,7 +57,10 @@ public class IntakeSubsystem {
 
   private void collectInputs() {
     getSensor();
+    // this is where logging goes
     DogLog.log("ExampleIntakeSubsystem/hasGP", getSensor());
+    DogLog.log("ExampleIntakeSubsystem/wantedState", wantedState.name());
+    DogLog.log("ExampleIntakeSubsystem/systemState", systemState.name());
   }
 
   // this handles simple, 1:1 transitions (see robot manager for more complex
@@ -89,10 +94,6 @@ public class IntakeSubsystem {
     systemState = handleStateTransitions();
     applyStates();
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
-    // this is where logging goes
-    DogLog.log("ExampleIntakeSubsystem/wantedState", wantedState);
-    DogLog.log("ExampleIntakeSubsystem/systemState", systemState);
-
   }
 
 }

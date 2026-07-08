@@ -7,8 +7,8 @@ public class Constants {
 
         public static boolean IS_AT_COMP = false;
 
-        // public static final String BETA_SERIAL_NUMBER = "-";// 0329F366
-        // public static final String SERIAL_NUMBER = System.getenv("serialnum");
+        public static final String BETA_SERIAL_NUMBER = "-"; // 0329F366
+        public static final String SERIAL_NUMBER = System.getenv("serialnum");
 
         public static final boolean IS_COMP_BOT = true;
 
@@ -23,17 +23,19 @@ public class Constants {
                         .withTorqueOpenLoopRampPeriod(0.04)
                         .withVoltageOpenLoopRampPeriod(0.04);
 
-        // Motor IDs here
-        public static final int Lights_ID = 55;
-        public static final int Intake_Motor_ID = 19;
-        public static final int CANrange_ID = 45;
+        // Intake
+        public static final int intake_Motor_ID = 20;
+        public static final int intake_CANrange_ID = 21;
 
         // Pivator
-        public static final int pivotMotorId = 20;
-        public static final int pivotCANcoder = 21;
+        public static final int pivot_Motor_ID = 30;
+        public static final int pivot_CANcoder_ID = 31;
 
         // Elevator
-        public static final int elevatorMotorFrontId = 22;
-        public static final int elevatorMotorBackId = 23;
+        public static final int elevator_Front_Motor_ID = 40;
+        public static final int elevator_Back_Motor_ID = 41;
+
+        // Motor IDs here
+        public static final int lights_ID = 55;
 
 }

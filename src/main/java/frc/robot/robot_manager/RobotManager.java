@@ -95,8 +95,8 @@ public class RobotManager {
     collectInputs();
     currentState = handleStateTransitions();
     applyStates();
-    DogLog.log("Robot/currentState", currentState);
-    DogLog.log("Robot/wantedstate", wantedState);
+    DogLog.log("Robot/currentState", currentState.name());
+    DogLog.log("Robot/wantedstate", wantedState.name());
 
   }
 
@@ -142,6 +142,7 @@ public class RobotManager {
   private void stow() {
     intake.setWantedState(IntakeSubsystem.WantedState.STOP);
     pivot.setWantedState(PivatorSubsystem.WantedState.STOW);
+    swerve.setWantedState(SwerveSubsystem.WantedState.TELEOP_DRIVE);
 
   }
 

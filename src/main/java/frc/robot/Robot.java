@@ -16,16 +16,17 @@ import frc.robot.example_intake_subsystem.IntakeSubsystem;
 import frc.robot.lights_subsystem.LightsSubsystem;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.WantedRobotState;
+import frc.robot.simulation.PhysicsSim;
 import frc.robot.swerve.SwerveSubsystem;
 
 public class Robot extends TimedRobot {
   private XboxController driverController = new XboxController(0);
   private SwerveSubsystem swerve = new SwerveSubsystem(driverController);
   private LightsSubsystem lights = new LightsSubsystem();
-  private PivatorSubsystem pivot = new PivatorSubsystem();
+  private PivatorSubsystem pivator = new PivatorSubsystem();
   private IntakeSubsystem intake = new IntakeSubsystem();
 
-  private final RobotManager manager = new RobotManager(swerve, lights, pivot, intake);
+  private final RobotManager manager = new RobotManager(swerve, lights, pivator, intake);
   private Autos autos = new Autos(manager);
 
   public Robot() {
@@ -40,7 +41,7 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     manager.periodic();
     swerve.periodic();
-    pivot.periodic();
+    pivator.periodic();
     intake.periodic();
     lights.periodic();
   }
@@ -127,6 +128,17 @@ public class Robot extends TimedRobot {
   }
 
   @Override
+  public void simulationInit() {
+    // this initializes the physics sim in simulation
+    PhysicsSim.getInstance().addSimProfile(pivator.pivotSimProfile);
+    PhysicsSim.getInstance().addSimProfile(pivator.frontElevatorSimProfile);
+
+  }
+
+  @Override
   public void simulationPeriodic() {
+    // this continuously runs the physics sim in simulation
+    PhysicsSim.getInstance().run();
+
   }
 }

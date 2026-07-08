@@ -17,7 +17,7 @@ public class LightsSubsystem {
   CANdle candle;
 
   public LightsSubsystem() {
-    candle = new CANdle(Constants.Lights_ID);
+    candle = new CANdle(Constants.lights_ID);
     candle.getConfigurator().apply(LightsConstants.candleConfig);
   }
 

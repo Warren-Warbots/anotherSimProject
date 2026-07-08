@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot.example_pivator_subsystem;
 
+import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -12,6 +13,8 @@ import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
+import frc.robot.simulation.SimMech;
+import frc.robot.simulation.TalonFXSimProfile;
 import frc.robot.util.TalonFxUtils;
 
 public class PivatorSubsystem {
@@ -20,12 +23,18 @@ public class PivatorSubsystem {
   private SystemState systemState = SystemState.STOWED;
 
   private double timestampAtSetState = Timer.getFPGATimestamp();
+
+  private final SimMech simMech = new SimMech();
+  public static final double rotorInertia = 0.02;
+  public TalonFXSimProfile pivotSimProfile;
+  public TalonFXSimProfile frontElevatorSimProfile;
+
   TalonFX pivotMotor;
   TalonFX elevatorMotorFront;
   TalonFX elevatorMotorBack;
   CANcoder pivotCANcoder;
 
-  double targetPivotRotation = 0.0;
+  double targetRotation = 0.0;
   double targetHeight = 0.0;
   double currentRotation = 0.0;
   double currentHeight = 0.0;
@@ -38,23 +47,26 @@ public class PivatorSubsystem {
   boolean elevatorAtGoal = false;
 
   public PivatorSubsystem() {
-
-    pivotCANcoder = new CANcoder(Constants.pivotCANcoder);
-
-    pivotMotor = new TalonFX(Constants.pivotMotorId);
+    /*
+     * initialize motors here
+     * step 1 is make config object for each motor in subsystem constants folder
+     * step 2 is to use configure talon function to apply config to that motor
+     * intakeMotor = new TalonFX(Constants.intake_Motor_ID);
+     */
+    pivotMotor = new TalonFX(Constants.pivot_Motor_ID);
     TalonFxUtils.configureTalon(pivotMotor, PivatorConstants.pivotMotorConfig);
-
-    elevatorMotorFront = new TalonFX(Constants.elevatorMotorFrontId);
+    elevatorMotorFront = new TalonFX(Constants.elevator_Front_Motor_ID);
     TalonFxUtils.configureTalon(elevatorMotorFront, PivatorConstants.elevatorMotorFrontConfig);
-
-    elevatorMotorBack = new TalonFX(Constants.elevatorMotorBackId);
+    elevatorMotorBack = new TalonFX(Constants.elevator_Back_Motor_ID);
     TalonFxUtils.configureTalon(elevatorMotorBack, PivatorConstants.elevatorMotorBackConfig);
+    pivotCANcoder = new CANcoder(Constants.pivot_CANcoder_ID);
 
     elevatorMotorFront.setPosition(0);
     elevatorMotorBack.setPosition(0);
-
     elevatorMotorBack.setControl(new Follower(elevatorMotorFront.getDeviceID(), MotorAlignmentValue.Opposed));
 
+    pivotSimProfile = new TalonFXSimProfile(pivotMotor, rotorInertia);
+    frontElevatorSimProfile = new TalonFXSimProfile(elevatorMotorFront, rotorInertia);
   }
 
   public enum WantedState {
@@ -81,18 +93,15 @@ public class PivatorSubsystem {
   private void collectInputs() {
     currentRotation = pivotMotor.getPosition().getValueAsDouble();
     currentHeight = elevatorMotorFront.getPosition().getValueAsDouble();
-    DogLog.log("ExamplePivatorSubsystem/currentRotation", currentRotation);
-    DogLog.log("ExamplePivatorSubsystem/currentHeight", currentHeight);
 
-    targetHeight = MathUtil.clamp(targetHeight, PivatorConstants.minElevatorHeight,
-        PivatorConstants.maxElevatorHeight);
-    targetPivotRotation = MathUtil.clamp(targetPivotRotation, PivatorConstants.minPivotRot,
-        PivatorConstants.maxPivotRot);
     pivotAtGoal = angleError < PivatorConstants.pivotTolerance;
     elevatorAtGoal = heightError < PivatorConstants.elevatorTolerance;
     heightError = Math.abs(targetHeight - currentHeight);
-    angleError = Math.abs(targetPivotRotation - currentRotation);
+    angleError = Math.abs(targetRotation - currentRotation);
     atGoal = pivotAtGoal && elevatorAtGoal;
+
+    // add logging here
+    DogLog.log("ExamplePivatorSubsystem/systemState", systemState.name());
 
   }
 
@@ -124,23 +133,26 @@ public class PivatorSubsystem {
     systemState = handleStateTransition();
     applyStates();
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
-    pivotMotor.setControl(PivatorConstants.pivotMotionMagicVoltage.withPosition(targetPivotRotation));
+    pivotMotor.setControl(PivatorConstants.pivotPositionVoltage.withPosition(targetRotation));
     elevatorMotorFront.setControl(PivatorConstants.elevatorMotionMagicVoltage.withPosition(targetHeight));
+    if (Utils.isSimulation()) {
+      simMech.updatePivot(pivotMotor.getPosition(), elevatorMotorFront.getPosition());
+    }
   }
 
   private void stow() {
     targetHeight = Constants.IS_COMP_BOT ? 7.52 : 0.0;
-    targetPivotRotation = Constants.IS_COMP_BOT ? 0.26 : 0.0;
+    targetRotation = Constants.IS_COMP_BOT ? 0.26 : 0.0;
   }
 
   private void scoreLVL3() {
     targetHeight = Constants.IS_COMP_BOT ? 17.25 : 26.4;
-    targetPivotRotation = Constants.IS_COMP_BOT ? 0.4898 : 0.452881;
+    targetRotation = Constants.IS_COMP_BOT ? 0.4898 : 0.452881;
   }
 
   private void scoreLVL4() {
     targetHeight = Constants.IS_COMP_BOT ? 31.2 : 56;
-    targetPivotRotation = Constants.IS_COMP_BOT ? 0.52 : 0.437763;
+    targetRotation = Constants.IS_COMP_BOT ? 0.52 : 0.437763;
   }
 
 }

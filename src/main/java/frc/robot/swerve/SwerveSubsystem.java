@@ -90,6 +90,7 @@ public class SwerveSubsystem {
     private double rotationJoystickLastTouched = -1;
     private double highSpeedLastTime = -1;
 
+    double robotSpeed;
     private Pose2d driveToPoseTargetPose = new Pose2d();
     private double driveToPoseMaxSpeed;
     private double driveToPoseMaxAngularSpeed;
@@ -314,12 +315,25 @@ public class SwerveSubsystem {
         drivetrain.resetPose(pose);
     }
 
-    public void periodic() {
-
+    private void collectInputs() {
         if (SwerveConstants.useLimelight) {
-
             addVisionPosesToPoseEstimator();
         }
+        robotSpeed = new Translation2d(swerveDriveState.Speeds.vxMetersPerSecond,
+                swerveDriveState.Speeds.vyMetersPerSecond).getNorm();
+        getTeleopDriveSpeeds();
+        DogLog.log("Swerve/swerveDriveState/ModuleStates", swerveDriveState.ModuleStates);
+        DogLog.log("Swerve/swerveDriveState/EstimatedPose", swerveDriveState.Pose);
+        DogLog.log("Swerve/swerveDriveState/Speeds", swerveDriveState.Speeds);
+        DogLog.log("Swerve/TopSpeedPercent", currTopSpeedPercent);
+        DogLog.log("Swerve/TopRotationSpeedPercent", currTopRotationSpeedPercent);
+        DogLog.log("Swerve/TeleopDesiredSpeeds", driverDesiredSpeeds);
+        DogLog.log("Swerve/SystemState", systemState.name());
+        DogLog.log("Swerve/WantedState", wantedState.name());
+    }
+
+    public void periodic() {
+        collectInputs();
         systemState = handleStateTransitions();
         applyStates();
 
@@ -328,17 +342,6 @@ public class SwerveSubsystem {
         swerveDriveState = drivetrain.getState();
 
         currentTime = Timer.getFPGATimestamp();
-        double robotSpeed = new Translation2d(swerveDriveState.Speeds.vxMetersPerSecond,
-                swerveDriveState.Speeds.vyMetersPerSecond).getNorm();
-        DogLog.log("Swerve/ModuleStates", swerveDriveState.ModuleStates);
-        DogLog.log("Swerve/EstimatedPose", swerveDriveState.Pose);
-        DogLog.log("Swerve/TopSpeedPercent", currTopSpeedPercent);
-        DogLog.log("Swerve/TopRotationSpeedPercent", currTopRotationSpeedPercent);
-        DogLog.log("Swerve/SystemState", systemState);
-
-        DogLog.log("Swerve/Speeds", swerveDriveState.Speeds);
-
-        getTeleopDriveSpeeds();
 
         if (Math.abs(driverDesiredSpeeds.omegaRadiansPerSecond) > SwerveConstants.rightXDeadband) {
             rotationJoystickLastTouched = currentTime;
@@ -356,7 +359,6 @@ public class SwerveSubsystem {
             lastMaintainHeadingAngle = Optional.empty();
         }
 
-        DogLog.log("Swerve/TeleopDesiredSpeeds", driverDesiredSpeeds);
     }
 
     private void teleopDrive() {
@@ -460,6 +462,7 @@ public class SwerveSubsystem {
 
     private void calibration() {
         // hi
+        // how's it going?
     }
 
     public void addVisionPosesToPoseEstimator() {
