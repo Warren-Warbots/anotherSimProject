@@ -1,11 +1,7 @@
 package frc.robot.util;
 
-import com.ctre.phoenix6.signals.MagnetHealthValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import org.opencv.core.Mat;
-
-import java.io.IOException;
 
 public class Circle {
     // Class to represent a circle

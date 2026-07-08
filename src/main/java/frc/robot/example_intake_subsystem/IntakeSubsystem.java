@@ -6,7 +6,6 @@ package frc.robot.example_intake_subsystem;
 
 import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
-
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
@@ -21,7 +20,7 @@ public class IntakeSubsystem {
   private double timestampAtSetState = Timer.getFPGATimestamp();
 
   TalonFX intakeMotor;
-  CANrange canrange = new CANrange(Constants.intake_CANrange_ID);
+  CANrange canrange = new CANrange(Constants.intakeCANrangeId);
 
   public IntakeSubsystem() {
     /*

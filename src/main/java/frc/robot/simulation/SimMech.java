@@ -1,8 +1,6 @@
 package frc.robot.simulation;
 
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -18,8 +16,6 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 public class SimMech {
         private final double HEIGHT = 100; // Controls the height of the mech2d SmartDashboard
         private final double WIDTH = 100; // Controls the height of the mech2d SmartDashboard
-
-        private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(0).withSlot(0);
 
         public SimMech() {
         }
