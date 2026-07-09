@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.Timer;
 
 public class DriveForwardAuto extends WarbotAuto {
 
-    private enum State {
+    public enum State {
         START,
         TEST_1,
         TEST_2,
@@ -19,11 +19,11 @@ public class DriveForwardAuto extends WarbotAuto {
         }
     }
 
-    private State currentState = State.START;
+    public State currentState = State.START;
     private Timer stateTimer = new Timer();
 
     private static final Pose2d[] UNDER_TRENCH_1 = { p(5.151, 0.637, 0.1), p(7.370, 0.680, 2.4) };
-    private static final Pose2d[] TEST_1 = { p(7.370, 0.680, 0.1), p(7.714, 2.909, 2.4) };
+    private static final Pose2d[] TEST_1 = { p(7.370, 0.680, 0.1), p(7.714, 2.909, 89.1), p(5.990, 3.536, 175.5) };
     private static final Pose2d[] TEST_2 = { p(7.728, 2.894, 0.1), p(5.395, 2.923, 2.4) };
 
     public DriveForwardAuto() {
@@ -37,7 +37,7 @@ public class DriveForwardAuto extends WarbotAuto {
 
     @Override
     public void periodic() {
-        DogLog.log("AutoState", currentState);
+        DogLog.log("AutoState", currentState); // need better logging
         switch (currentState) {
             case START:
                 resetSwervePose(PathFollower.applyFlipping(UNDER_TRENCH_1[0], mirror));
@@ -46,10 +46,10 @@ public class DriveForwardAuto extends WarbotAuto {
                 break;
 
             case TEST_1:
-                if (manager.drivePath(TEST_1, 2.0, 3.5, 0.4, true, mirror)) {
-                    if (manager.swerve.velocityAtGoal()) {
-                        currentState = currentState.next();
-                    }
+                if (manager.driveArc(TEST_1, 2.0, 3.5, 0.25, true, true, mirror)) {
+                    // if (manager.swerve.velocityAtGoal()) {
+                    // currentState = currentState.next();
+                    // }
                 }
                 break;
 

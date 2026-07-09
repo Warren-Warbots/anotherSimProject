@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.autos.Autos;
+import frc.robot.autos.DriveForwardAuto;
+import frc.robot.autos.WarbotAuto;
 import frc.robot.example_pivator_subsystem.PivatorSubsystem;
 import frc.robot.example_intake_subsystem.IntakeSubsystem;
 import frc.robot.lights_subsystem.LightsSubsystem;
@@ -75,7 +77,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     autos.periodic();
-    DogLog.log("isFinished", autos.isFinished());
+    DogLog.log("Autos/isFinished", autos.isFinished());
   }
 
   @Override

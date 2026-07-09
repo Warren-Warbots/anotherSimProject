@@ -29,6 +29,7 @@ public class IntakeSubsystem {
      * step 2 is to use configure talon function to apply config to that motor
      * intakeMotor = new TalonFX(Constants.intake_Motor_ID);
      */
+    intakeMotor = new TalonFX(Constants.intakeMotorId);
     TalonFxUtils.configureTalon(intakeMotor, IntakeConstants.intakeMotorConfig);
   }
 
