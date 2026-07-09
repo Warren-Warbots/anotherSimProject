@@ -77,7 +77,6 @@ switch(Constants.robotMode){
     autos = new Autos(manager);
   }
 
-
   @Override
   public void robotPeriodic() {
     manager.periodic();
@@ -86,7 +85,6 @@ switch(Constants.robotMode){
     intake.periodic();
     lights.periodic();
   }
-
 
   @Override
   public void robotInit() {
