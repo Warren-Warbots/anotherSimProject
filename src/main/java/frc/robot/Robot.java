@@ -139,8 +139,8 @@ switch(Constants.robotMode){
     boolean povLeft = driverController.getPOV() == 270;
     boolean povRight = driverController.getPOV() == 90;
     boolean startPressed = driverController.getStartButton();
-    boolean rightBumper = driverController.getRightBumper();
-    boolean leftBumper = driverController.getLeftBumper();
+    boolean rightBumper = driverController.getRightBumperButton();
+    boolean leftBumper = driverController.getLeftBumperButton();
 
     if (leftTrigger) {
       manager.setWantedRobotState(WantedRobotState.AUTO_SCORE_L4);
