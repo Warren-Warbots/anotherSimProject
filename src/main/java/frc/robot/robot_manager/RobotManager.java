@@ -8,6 +8,7 @@ import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.example_pivator_subsystem.PivatorSubsystem;
+import frc.robot.autos.ArcFollower;
 import frc.robot.autos.PathFollower;
 import frc.robot.example_intake_subsystem.IntakeSubsystem;
 import frc.robot.lights_subsystem.LightsSubsystem;
@@ -29,6 +30,8 @@ public class RobotManager {
 
   // Managed Path Following
   private PathFollower currentPathFollower = null;
+  private ArcFollower currentArcFollower = null;
+
   private Pose2d[] lastWaypoints = null;
 
   public RobotManager(SwerveSubsystem swerve, LightsSubsystem lights, PivatorSubsystem pivot, IntakeSubsystem intake) {
@@ -67,6 +70,26 @@ public class RobotManager {
     if (currentPathFollower == null)
       return true;
     return currentPathFollower.run();
+  }
+
+  public boolean driveArc(Pose2d[] waypoints, double maxVel, double maxRotVel, double tolerance, boolean continuous,
+      boolean turnClockwise,
+      boolean mirror) {
+    // If we've started a new path, reset the follower
+    if (waypoints != lastWaypoints) {
+      currentArcFollower = new ArcFollower(this, waypoints)
+          .withMaxVelocity(maxVel)
+          .withMaxRotateVelocity(maxRotVel)
+          .withTolerance(tolerance)
+          .continuous(continuous)
+          .turnClockwise(turnClockwise)
+          .withMirror(mirror);
+      lastWaypoints = waypoints;
+    }
+
+    if (currentArcFollower == null)
+      return true;
+    return currentArcFollower.run();
   }
 
   /** Concise version for single-point driving in Auto */

@@ -32,7 +32,6 @@ public class Autos extends WarbotAuto {
         SmartDashboard.putData("MirrorAuto", mirrorAuto);
 
         chooser1.addOption("DriveForwardAuto", new DriveForwardAuto());
-
         chooser2.addOption("DriveForwardAuto", new DriveForwardAuto());
 
         // This is where the auto selector is created for the dashboard, alse calling

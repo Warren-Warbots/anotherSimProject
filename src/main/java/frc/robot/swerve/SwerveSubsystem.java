@@ -442,7 +442,6 @@ public class SwerveSubsystem {
                 .withVelocityX(xSlew)
                 .withVelocityY(ySlew)
                 .withTargetDirection(targetPose.getRotation())
-                .withCenterOfRotation(swerveCOR)
                 .withMaxAbsRotationalRate(maxRVelocity));
         atGoal = (targetPose.minus(getPose())).getTranslation().getNorm() < atGoalTolerance; // dont double
                                                                                              // calc

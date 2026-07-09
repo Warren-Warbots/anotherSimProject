@@ -11,7 +11,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class DriveForwardAuto extends WarbotAuto {
 
-    private enum State {
+    public enum State {
         START,
         TEST_1,
         TEST_2,
@@ -24,12 +24,14 @@ public class DriveForwardAuto extends WarbotAuto {
         }
     }
 
-    private State currentState = State.START;
+    public State currentState = State.START;
     private Timer stateTimer = new Timer();
 
-    private static final Pose2d[] UNDER_TRENCH_1 = { p(5.151, 0.637, 0.1), p(7.018, 0.639, -0.0) };
-    private static final Pose2d[] TEST_1 = { p(7.814, 1.373, 0), p(7.874, 3.482, 0) };
-    private static final Pose2d[] TEST_2 = { p(6.702, 2.779, 0), p(2.841, 2.626, 0) };
+    private static final Pose2d[] UNDER_TRENCH_1 = { p(5.151, 0.637, 0.1), p(7.370, 0.680, 2.4) };
+    private static final Pose2d[] TEST_1 = { p(7.370, 0.680, 0.1), p(7.714, 2.909, 89.1), p(5.990, 3.536, 175.5) };
+    private static final Pose2d[] TEST_2 = { p(7.728, 2.894, 0.1), p(5.395, 2.923, 2.4) };
+    // Each path is created using a pose2d which can be edited by warPath instead of
+    // finding each point individually, you can also add as many points to one path
 
     public DriveForwardAuto() {
     }
