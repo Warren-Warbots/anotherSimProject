@@ -7,10 +7,9 @@ package frc.robot.example_intake_subsystem;
 import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
-import frc.robot.util.TalonFxUtils;
+import frc.robot.simulation.TalonFXSimProfile;
 import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem {
@@ -18,21 +17,22 @@ public class IntakeSubsystem {
 
   public WantedState wantedState = WantedState.STOP;
   private SystemState systemState = SystemState.STOPPED;
-
+  public final IntakeIO io;
+  private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
   private double timestampAtSetState = Timer.getFPGATimestamp();
+  private TalonFXSimProfile intakeMotorSim;
 
   TalonFX intakeMotor;
   CANrange canrange = new CANrange(Constants.intakeCANrangeId);
 
-  public IntakeSubsystem() {
+  public IntakeSubsystem(IntakeIO io) {
     /*
      * initialize motors here
      * step 1 is make config object for each motor in subsystem constants folder
      * step 2 is to use configure talon function to apply config to that motor
      * intakeMotor = new TalonFX(Constants.intake_Motor_ID);
      */
-    intakeMotor = new TalonFX(Constants.intakeMotorId);
-    TalonFxUtils.configureTalon(intakeMotor, IntakeConstants.intakeMotorConfig);
+    this.io = io;
   }
 
   public enum WantedState {
@@ -58,12 +58,10 @@ public class IntakeSubsystem {
   }
 
   private void collectInputs() {
-    getSensor();
-    // TODO: Change to Logger.log
-    // this is where logging goes
-    DogLog.log("ExampleIntakeSubsystem/hasGP", getSensor());
-    DogLog.log("ExampleIntakeSubsystem/wantedState", wantedState.name());
-    DogLog.log("ExampleIntakeSubsystem/systemState", systemState.name());
+    io.updateInputs(inputs);
+    Logger.processInputs("Intake", inputs);
+    Logger.recordOutput("Intake/wantedState", wantedState.name());
+    Logger.recordOutput("Intake/systemState", systemState.name());
   }
 
   // this handles simple, 1:1 transitions (see robot manager for more complex
@@ -79,9 +77,9 @@ public class IntakeSubsystem {
   // this applies motor controls based on systemState (simple version)
   private void applyStates() {
     switch (systemState) {
-      case INTAKING -> intakeMotor.setControl(IntakeConstants.intakeVoltageOut.withOutput(4.0));
-      case OUTTAKING -> intakeMotor.setControl(IntakeConstants.intakeVoltageOut.withOutput(-4.0));
-      case STOPPED -> intakeMotor.setControl(IntakeConstants.intakeVoltageOut.withOutput(0.0));
+      case INTAKING -> io.setVoltage(-12.0);
+      case OUTTAKING -> io.setVoltage(4.0);
+      case STOPPED -> io.setVoltage(0.0);
     }
   }
 

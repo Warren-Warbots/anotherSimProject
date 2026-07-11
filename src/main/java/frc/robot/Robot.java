@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.autos.Autos;
 import frc.robot.autos.DriveForwardAuto;
 import frc.robot.autos.WarbotAuto;
+import frc.robot.example_intake_subsystem.IntakeIO;
+import frc.robot.example_intake_subsystem.IntakeIOReal;
 import frc.robot.example_pivator_subsystem.PivatorSubsystem;
 import frc.robot.example_intake_subsystem.IntakeSubsystem;
 import frc.robot.lights_subsystem.LightsSubsystem;
@@ -30,6 +32,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 
 public class Robot extends LoggedRobot {
+  boolean replaying = Constants.robotMode == Constants.Mode.REPLAY;
   private XboxController driverController;
   private SwerveSubsystem swerve;
   private LightsSubsystem lights;
@@ -74,7 +77,7 @@ switch(Constants.robotMode){
     swerve = new SwerveSubsystem(driverController);
     lights = new LightsSubsystem();
     pivot = new PivatorSubsystem();
-    intake = new IntakeSubsystem();
+    intake = new IntakeSubsystem(replaying ? new IntakeIO() {} : new IntakeIOReal());
     manager = new RobotManager(swerve, lights, pivot, intake);
     autos = new Autos(manager);
   }
@@ -86,11 +89,14 @@ switch(Constants.robotMode){
     pivot.periodic();
     intake.periodic();
     lights.periodic();
+    PhysicsSim.getInstance().run();
   }
 
   @Override
   public void robotInit() {
     Logger.recordOutput("IsCompBot", Constants.IS_AT_COMP);
+    PhysicsSim.getInstance().addSimProfile(pivot.pivotSimProfile);
+    PhysicsSim.getInstance().addSimProfile(pivot.frontElevatorSimProfile);
   }
 
   @Override
@@ -174,15 +180,12 @@ switch(Constants.robotMode){
   @Override
   public void simulationInit() {
     // this initializes the physics sim in simulation
-    PhysicsSim.getInstance().addSimProfile(pivot.pivotSimProfile);
-    PhysicsSim.getInstance().addSimProfile(pivot.frontElevatorSimProfile);
 
   }
 
   @Override
   public void simulationPeriodic() {
     // this continuously runs the physics sim in simulation
-    PhysicsSim.getInstance().run();
 
   }
 }

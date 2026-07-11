@@ -120,10 +120,8 @@ public class SwerveSubsystem {
 
         this.driverXboxController = driverXboxController;
 
-        if (Utils.isSimulation() && Constants.robotMode == Constants.Mode.SIM) {
-            startSimThread();
-        }
 
+            startSimThread();
         drivetrain.registerTelemetry(telem::telemeterize);
     }
 
