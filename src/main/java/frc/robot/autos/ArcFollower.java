@@ -27,7 +27,7 @@ public class ArcFollower {
     private boolean isContinuous = false;
     private boolean turnClockwise = false;
     private boolean isMirrored = false;
-    Pose2d p;
+    private Pose2d p;
 
     private int currentWaypointIndex = 0;
     private boolean hasStartedCurrentWaypoint = false;
@@ -104,7 +104,7 @@ public class ArcFollower {
         c = new Circle(startPoint,
                 midPoint,
                 endPoint);
-        DogLog.log("Autos/c", c.getCenter());
+        DogLog.log("Autos/Arc/center", c.getCenter());
         Rotation2d startAngle = startPoint.minus(c.getCenter()).getAngle();
         Rotation2d midAngle = midPoint.minus(c.getCenter()).getAngle();
         Rotation2d endAngle = endPoint.minus(c.getCenter()).getAngle();
@@ -113,7 +113,7 @@ public class ArcFollower {
 
         Rotation2d current = startAngle;
         Rotation2d angleIncrement = angleDelta.div(addTurnPoints);
-        for (int w = 0; w < addTurnPoints; w++) {
+        for (int w = 0; w <= addTurnPoints; w++) {
 
             Rotation2d thetaCenterToRobot = current;
             Rotation2d thetaDesiredP90 = new Rotation2d(thetaCenterToRobot.getCos(), thetaCenterToRobot.getSin());
@@ -128,11 +128,11 @@ public class ArcFollower {
 
             wayPointsInterpolated.add(new Pose2d(c.getPoint(current), r));
             current = current.plus(angleIncrement);
-            DogLog.log("Autos/arcRadius", c.getRadius());
+            DogLog.log("Autos/Arc/arcRadius", c.getRadius());
         }
         angleDelta = endAngle.minus(current);
         angleIncrement = angleDelta.div(addTurnPoints);
-        for (int w = 0; w < addTurnPoints; w++) {
+        for (int w = 0; w <= addTurnPoints; w++) {
 
             Rotation2d thetaCenterToRobot = current;
             Rotation2d thetaDesiredP90 = new Rotation2d(thetaCenterToRobot.getCos(), thetaCenterToRobot.getSin());
@@ -147,37 +147,25 @@ public class ArcFollower {
 
             wayPointsInterpolated.add(new Pose2d(c.getPoint(current), r));
             current = current.plus(angleIncrement);
-            DogLog.log("Autos/arcRadius", c.getRadius());
+            DogLog.log("Autos/Arc/arcRadius", c.getRadius());
+        }
+        if (currentWaypointIndex >= wayPointsInterpolated.size()) {
+            return true;
         }
 
-        boolean cont = false;
-        assert !wayPointsInterpolated.isEmpty();
-        // cmd = null;
-        for (int i = 0; i < wayPointsInterpolated.size(); i++) {
+        isContinuous = isContinuous || (currentWaypointIndex != waypoints.size() - 1);
 
-            p = wayPointsInterpolated.get(i);
-            DogLog.log("Autos/p", p);
+        Pose2d p = wayPointsInterpolated.get(currentWaypointIndex);
+        DogLog.log("Autos/Arc/p", p);
 
-            if (isContinuous) {
-                cont = true;
-            } else if (!isContinuous) {
-                cont = i != wayPointsInterpolated.size() - 1;
-            }
+        if (!hasStartedCurrentWaypoint) {
+            manager.startVelocityDrivetoPose(p, maxDriveVelocity, maxRotateVelocity, atGoalTolerance, isContinuous);
+            hasStartedCurrentWaypoint = true;
+        }
 
-            if (!hasStartedCurrentWaypoint) {
-                manager.startVelocityDrivetoPose(p, maxDriveVelocity, maxRotateVelocity, atGoalTolerance, cont);
-                hasStartedCurrentWaypoint = true;
-            }
-
-            if (manager.swerve.velocityAtGoal()) {
-                currentWaypointIndex++;
-                hasStartedCurrentWaypoint = false;
-            }
-            if (currentWaypointIndex >= wayPointsInterpolated.size()) {
-                return true;
-            }
-            DogLog.log("Autos/waypointsize", wayPointsInterpolated.size());
-            DogLog.log("Autos/currentWaypointIndex", currentWaypointIndex);
+        if (manager.swerve.velocityAtGoal()) {
+            currentWaypointIndex++;
+            hasStartedCurrentWaypoint = false;
         }
 
         return currentWaypointIndex >= wayPointsInterpolated.size();

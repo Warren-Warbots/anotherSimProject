@@ -317,6 +317,8 @@ public class SwerveSubsystem {
         DogLog.log("Swerve/TeleopDesiredSpeeds", driverDesiredSpeeds);
         DogLog.log("Swerve/SystemState", systemState.name());
         DogLog.log("Swerve/WantedState", wantedState.name());
+        DogLog.log("Swerve/atGoal", atGoal);
+
     }
 
     public void periodic() {
@@ -440,6 +442,7 @@ public class SwerveSubsystem {
         drivetrain.setControl(drive_snap
                 .withVelocityX(xSlew)
                 .withVelocityY(ySlew)
+                .withCenterOfRotation(swerveCOR)
                 .withTargetDirection(targetPose.getRotation())
                 .withMaxAbsRotationalRate(maxRVelocity));
         atGoal = (targetPose.minus(getPose())).getTranslation().getNorm() < atGoalTolerance; // dont double
