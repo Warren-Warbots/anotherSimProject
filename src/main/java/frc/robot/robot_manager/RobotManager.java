@@ -72,7 +72,8 @@ public class RobotManager {
     return currentPathFollower.run();
   }
 
-  public boolean driveArc(Pose2d[] waypoints, double maxVel, double maxRotVel, double tolerance, boolean continuous,
+  public boolean driveArc(Pose2d[] waypoints, double maxVel, double maxRotVel, double tolerance, double addTurnDegrees,
+      int nPoints, boolean continuous,
       boolean turnClockwise,
       boolean mirror) {
     // If we've started a new path, reset the follower
@@ -81,6 +82,8 @@ public class RobotManager {
           .withMaxVelocity(maxVel)
           .withMaxRotateVelocity(maxRotVel)
           .withTolerance(tolerance)
+          .addTurnDegrees(addTurnDegrees)
+          .addTurnPoints(nPoints)
           .continuous(continuous)
           .turnClockwise(turnClockwise)
           .withMirror(mirror);

@@ -302,12 +302,28 @@ public class SwerveSubsystem {
         drivetrain.resetPose(pose);
     }
 
-    public void periodic() {
-
+    private void collectInputs() {
         if (SwerveConstants.useLimelight) {
 
             addVisionPosesToPoseEstimator();
         }
+        robotSpeed = new Translation2d(swerveDriveState.Speeds.vxMetersPerSecond,
+                swerveDriveState.Speeds.vyMetersPerSecond).getNorm();
+        getTeleopDriveSpeeds();
+        DogLog.log("Swerve/swerveDriveState/ModuleStates", swerveDriveState.ModuleStates);
+        DogLog.log("Swerve/swerveDriveState/EstimatedPose", swerveDriveState.Pose);
+        DogLog.log("Swerve/swerveDriveState/Speeds", swerveDriveState.Speeds);
+        DogLog.log("Swerve/TopSpeedPercent", currTopSpeedPercent);
+        DogLog.log("Swerve/TopRotationSpeedPercent", currTopRotationSpeedPercent);
+        DogLog.log("Swerve/TeleopDesiredSpeeds", driverDesiredSpeeds);
+        DogLog.log("Swerve/SystemState", systemState.name());
+        DogLog.log("Swerve/WantedState", wantedState.name());
+        DogLog.log("Swerve/atGoal", atGoal);
+
+    }
+
+    public void periodic() {
+        collectInputs();
         systemState = handleStateTransitions();
         applyStates();
 
@@ -316,17 +332,6 @@ public class SwerveSubsystem {
         swerveDriveState = drivetrain.getState();
 
         currentTime = Timer.getFPGATimestamp();
-        robotSpeed = new Translation2d(swerveDriveState.Speeds.vxMetersPerSecond,
-                swerveDriveState.Speeds.vyMetersPerSecond).getNorm();
-        Logger.recordOutput("Swerve/ModuleStates", swerveDriveState.ModuleStates);
-        Logger.recordOutput("Swerve/EstimatedPose", swerveDriveState.Pose);
-        Logger.recordOutput("Swerve/TopSpeedPercent", currTopSpeedPercent);
-        Logger.recordOutput("Swerve/TopRotationSpeedPercent", currTopRotationSpeedPercent);
-        Logger.recordOutput("Swerve/SystemState", systemState);
-
-        Logger.recordOutput("Swerve/Speeds", swerveDriveState.Speeds);
-
-        getTeleopDriveSpeeds();
 
         if (Math.abs(driverDesiredSpeeds.omegaRadiansPerSecond) > SwerveConstants.rightXDeadband) {
             rotationJoystickLastTouched = currentTime;
@@ -439,6 +444,7 @@ public class SwerveSubsystem {
         drivetrain.setControl(drive_snap
                 .withVelocityX(xSlew)
                 .withVelocityY(ySlew)
+                .withCenterOfRotation(swerveCOR)
                 .withTargetDirection(targetPose.getRotation())
                 .withMaxAbsRotationalRate(maxRVelocity));
         atGoal = (targetPose.minus(getPose())).getTranslation().getNorm() < atGoalTolerance; // dont double

@@ -107,6 +107,8 @@ switch(Constants.robotMode){
   public void disabledPeriodic() {
     autos.updateMirror();
     autos.preloadAuto();
+    autos.init();
+
   }
 
   @Override

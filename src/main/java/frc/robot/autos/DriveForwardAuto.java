@@ -29,7 +29,7 @@ public class DriveForwardAuto extends WarbotAuto {
 
     private static final Pose2d[] UNDER_TRENCH_1 = { p(5.151, 0.637, 0.1), p(7.370, 0.680, 2.4) };
     private static final Pose2d[] TEST_1 = { p(7.370, 0.680, 0.1), p(7.714, 2.909, 89.1), p(5.990, 3.536, 175.5) };
-    private static final Pose2d[] TEST_2 = { p(7.728, 2.894, 0.1), p(5.395, 2.923, 2.4) };
+    private static final Pose2d[] TEST_2path = { p(5.990, 3.536, 175.5), p(5.971, 0.718, 0.0) };
     // Each path is created using a pose2d which can be edited by warPath instead of
     // finding each point individually, you can also add as many points to one path
 
@@ -53,24 +53,38 @@ public class DriveForwardAuto extends WarbotAuto {
                 break;
 
             case TEST_1:
+                    DogLog.log("driveArc", manager.driveArc(TEST_1, 2.0, 3.5, 0.4, 90.0, 100, true, true, mirror));
                 if (manager.drivePath(TEST_1, 2.0, 3.5, 0.4, true, mirror)) {
-                    if (manager.swerve.velocityAtGoal()) {
-                        currentState = currentState.next();
+                    if (manager.driveArc(TEST_1, 2.0, 3.5, 0.4, 90.0, 100, true, true, mirror)) {
+                        // After running the starting state you can follow each path using the drivePath
+                        // function
+                        if (manager.swerve.velocityAtGoal()) {
+                            currentState = currentState.next();
+                        }
                     }
                 }
-                break;
+                    break;
 
             case TEST_2:
-                if (manager.drivePath(TEST_2, 2.0, 3.5, 0.4, false, mirror)) {
-                    if (manager.swerve.velocityAtGoal()) {
-                        currentState = currentState.next();
-                    }
-                }
-                break;
+                        DogLog.log("drivePath", manager.drivePath(TEST_2path, 2.0, 3.5, 0.4, false, mirror));
+
+                        if (manager.drivePath(TEST_2path, 2.0, 3.5, 0.4, false, mirror)) {
+                            if (manager.swerve.velocityAtGoal()) {
+                                currentState = currentState.next();
+                            }
+                        }
+                        break;
 
             case DONE:
-                isFinished = true;
-                break;
+                        isFinished = true;
+                        if (manager.swerve.velocityAtGoal()) {
+                            isFinished = true;
+                            // This State is to end out auto
+
+                        }
+                        break;
+
         }
+
     }
 }
