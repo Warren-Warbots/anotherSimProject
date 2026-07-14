@@ -27,7 +27,7 @@ public class LightsSubsystem {
   public void periodic() {
     // This is where your state machine lives
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
-    DogLog.log("LightsSubsystem/state", state);
+    DogLog.log("LightsSubsystem/state", state.name());
 
     switch (state) {
 
