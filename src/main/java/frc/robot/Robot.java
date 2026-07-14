@@ -79,7 +79,6 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     autos.periodic();
-    DogLog.log("Autos/isFinished", autos.isFinished());
   }
 
   @Override

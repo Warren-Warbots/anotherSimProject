@@ -1,5 +1,6 @@
 package frc.robot.autos;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.robot_manager.RobotManager;
@@ -62,6 +63,8 @@ public class Autos extends WarbotAuto {
     }
 
     public void periodic() {
+        DogLog.log("Autos/path1finished", path1.isFinished());
+        DogLog.log("Autos/path2finished", path2.isFinished());
         if (!path1Finished) {
             path1.periodic();
             if (path1.isFinished()) {
