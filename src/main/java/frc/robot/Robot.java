@@ -61,6 +61,8 @@ public class Robot extends TimedRobot {
   public void disabledPeriodic() {
     autos.updateMirror();
     autos.preloadAuto();
+    autos.init();
+
   }
 
   @Override

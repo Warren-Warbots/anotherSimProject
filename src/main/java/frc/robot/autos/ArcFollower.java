@@ -20,6 +20,9 @@ public class ArcFollower {
     private double maxDriveVelocity = 2.5;
     private double maxRotateVelocity = 3.5;
     private double atGoalTolerance = 0.25;
+    private double addTurnDegrees = 0.0;
+    private int addTurnPoints = 5;
+
     private double timeout_s = 300;
     private boolean isContinuous = false;
     private boolean turnClockwise = false;
@@ -73,6 +76,16 @@ public class ArcFollower {
         return this;
     }
 
+    public ArcFollower addTurnDegrees(double turnDegrees) {
+        this.addTurnDegrees = turnDegrees;
+        return this;
+    }
+
+    public ArcFollower addTurnPoints(int nPoints) {
+        this.addTurnPoints = nPoints;
+        return this;
+    }
+
     public void reset() {
         currentWaypointIndex = 0;
         hasStartedCurrentWaypoint = false;
@@ -84,7 +97,6 @@ public class ArcFollower {
     public boolean run() {
         ArrayList<Pose2d> wayPointsInterpolated = new ArrayList<>();
         Circle c;
-        int nPoints = 5;
         Rotation2d r = new Rotation2d();
         Translation2d startPoint = waypoints.get(0).getTranslation();
         Translation2d midPoint = waypoints.get(1).getTranslation();
@@ -100,8 +112,8 @@ public class ArcFollower {
         Rotation2d angleDelta = midAngle.minus(startAngle);
 
         Rotation2d current = startAngle;
-        Rotation2d angleIncrement = angleDelta.div(nPoints);
-        for (int w = 0; w < nPoints; w++) {
+        Rotation2d angleIncrement = angleDelta.div(addTurnPoints);
+        for (int w = 0; w < addTurnPoints; w++) {
 
             Rotation2d thetaCenterToRobot = current;
             Rotation2d thetaDesiredP90 = new Rotation2d(thetaCenterToRobot.getCos(), thetaCenterToRobot.getSin());
@@ -119,8 +131,8 @@ public class ArcFollower {
             DogLog.log("Autos/arcRadius", c.getRadius());
         }
         angleDelta = endAngle.minus(current);
-        angleIncrement = angleDelta.div(nPoints);
-        for (int w = 0; w < nPoints; w++) {
+        angleIncrement = angleDelta.div(addTurnPoints);
+        for (int w = 0; w < addTurnPoints; w++) {
 
             Rotation2d thetaCenterToRobot = current;
             Rotation2d thetaDesiredP90 = new Rotation2d(thetaCenterToRobot.getCos(), thetaCenterToRobot.getSin());
@@ -152,18 +164,18 @@ public class ArcFollower {
                 cont = i != wayPointsInterpolated.size() - 1;
             }
 
-            // if (!hasStartedCurrentWaypoint) {
-            manager.startVelocityDrivetoPose(p, maxDriveVelocity, maxRotateVelocity, atGoalTolerance, cont);
-            // hasStartedCurrentWaypoint = true;
-            // }
+            if (!hasStartedCurrentWaypoint) {
+                manager.startVelocityDrivetoPose(p, maxDriveVelocity, maxRotateVelocity, atGoalTolerance, cont);
+                hasStartedCurrentWaypoint = true;
+            }
 
-            // if (manager.swerve.velocityAtGoal()) {
-            // currentWaypointIndex++;
-            // hasStartedCurrentWaypoint = false;
-            // }
-            // if (currentWaypointIndex >= wayPointsInterpolated.size()) {
-            // return true;
-            // }
+            if (manager.swerve.velocityAtGoal()) {
+                currentWaypointIndex++;
+                hasStartedCurrentWaypoint = false;
+            }
+            if (currentWaypointIndex >= wayPointsInterpolated.size()) {
+                return true;
+            }
             DogLog.log("Autos/waypointsize", wayPointsInterpolated.size());
             DogLog.log("Autos/currentWaypointIndex", currentWaypointIndex);
         }

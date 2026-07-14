@@ -51,25 +51,25 @@ public class DriveForwardAuto extends WarbotAuto {
                 break;
 
             case TEST_1:
-                if (manager.drivePath(TEST_1, 2.0, 3.5, 0.4, true, mirror)) {
+                if (manager.driveArc(TEST_1, 2.0, 3.5, 0.4, 90.0, 5, true, false, mirror)) {
                     // After running the starting state you can follow each path using the drivePath
                     // function
-                    if (manager.swerve.velocityAtGoal()) {
-                        currentState = currentState.next();
-                        // This if statement waits till the path is completed to go to the next state
+                    // if (manager.swerve.velocityAtGoal()) {
+                    currentState = currentState.next();
+                    // This if statement waits till the path is completed to go to the next state
 
-                        // Use this if statement if you’re calling a system state like intake, but not
-                        // if you’re setting the next state to a path.
-                    }
+                    // Use this if statement if you’re calling a system state like intake, but not
+                    // if you’re setting the next state to a path.
+                    // }
 
                 }
                 break;
 
             case TEST_2:
                 if (manager.drivePath(TEST_2, 2.0, 3.5, 0.4, false, mirror)) {
-                    if (manager.swerve.velocityAtGoal()) {
-                        currentState = currentState.next();
-                    }
+                    // if (manager.swerve.velocityAtGoal()) {
+                    currentState = currentState.next();
+                    // }
                 }
                 break;
 
