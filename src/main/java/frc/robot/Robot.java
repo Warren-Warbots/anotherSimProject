@@ -15,6 +15,8 @@ import frc.robot.autos.DriveForwardAuto;
 import frc.robot.autos.WarbotAuto;
 import frc.robot.example_intake_subsystem.IntakeIO;
 import frc.robot.example_intake_subsystem.IntakeIOReal;
+import frc.robot.example_pivator_subsystem.PivatorIO;
+import frc.robot.example_pivator_subsystem.PivatorIOReal;
 import frc.robot.example_pivator_subsystem.PivatorSubsystem;
 import frc.robot.example_intake_subsystem.IntakeSubsystem;
 import frc.robot.lights_subsystem.LightsSubsystem;
@@ -76,8 +78,8 @@ switch(Constants.robotMode){
     driverController = new XboxController(0);
     swerve = new SwerveSubsystem(driverController);
     lights = new LightsSubsystem();
-    pivot = new PivatorSubsystem();
-    intake = new IntakeSubsystem(replaying ? new IntakeIO() {} : new IntakeIOReal());
+    pivot = new PivatorSubsystem(replaying ? new PivatorIO(){} : new PivatorIOReal());
+    intake = new IntakeSubsystem(replaying ? new IntakeIO(){} : new IntakeIOReal());
     manager = new RobotManager(swerve, lights, pivot, intake);
     autos = new Autos(manager);
   }
@@ -95,8 +97,6 @@ switch(Constants.robotMode){
   @Override
   public void robotInit() {
     Logger.recordOutput("IsCompBot", Constants.IS_AT_COMP);
-    PhysicsSim.getInstance().addSimProfile(pivot.pivotSimProfile);
-    PhysicsSim.getInstance().addSimProfile(pivot.frontElevatorSimProfile);
   }
 
   @Override

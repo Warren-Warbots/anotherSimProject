@@ -25,13 +25,7 @@ public class PivatorSubsystem {
 
   private final SimMech simMech = new SimMech();
   public static final double rotorInertia = 0.02;
-  public TalonFXSimProfile pivotSimProfile;
-  public TalonFXSimProfile frontElevatorSimProfile;
-
-  TalonFX pivotMotor;
-  TalonFX elevatorFrontMotor;
-  TalonFX elevatorBackMotor;
-  CANcoder pivotCANcoder;
+  public PivatorIO io;
 
   double targetRotation = 0.0;
   double targetHeight = 0.0;
@@ -42,27 +36,14 @@ public class PivatorSubsystem {
   boolean pivotAtGoal = false;
   boolean elevatorAtGoal = false;
 
-  public PivatorSubsystem() {
+  public PivatorSubsystem(PivatorIO io) {
     /*
      * initialize motors here
      * step 1 is make config object for each motor in subsystem constants folder
      * step 2 is to use configure talon function to apply config to that motor
      * intakeMotor = new TalonFX(Constants.intake_Motor_ID);
      */
-    pivotMotor = new TalonFX(Constants.pivotMotorId);
-    TalonFxUtils.configureTalon(pivotMotor, PivatorConstants.pivotMotorConfig);
-    elevatorFrontMotor = new TalonFX(Constants.elevatorFrontMotorId);
-    TalonFxUtils.configureTalon(elevatorFrontMotor, PivatorConstants.elevatorFrontMotorConfig);
-    elevatorBackMotor = new TalonFX(Constants.elevatorBackMotorId);
-    TalonFxUtils.configureTalon(elevatorBackMotor, PivatorConstants.elevatorBackMotorConfig);
-    pivotCANcoder = new CANcoder(Constants.pivotCANcoderId);
-
-    elevatorFrontMotor.setPosition(0);
-    elevatorBackMotor.setPosition(0);
-    elevatorBackMotor.setControl(new Follower(elevatorFrontMotor.getDeviceID(), MotorAlignmentValue.Opposed));
-
-    pivotSimProfile = new TalonFXSimProfile(pivotMotor, rotorInertia);
-    frontElevatorSimProfile = new TalonFXSimProfile(elevatorFrontMotor, rotorInertia);
+    this.io = io;
   }
 
   public enum WantedState {
@@ -85,8 +66,6 @@ public class PivatorSubsystem {
   }
 
   private void collectInputs() {
-    currentRotation = pivotMotor.getPosition().getValueAsDouble();
-    currentHeight = elevatorFrontMotor.getPosition().getValueAsDouble();
     atGoal = pivotAtGoal && elevatorAtGoal;
     Logger.recordOutput("ExamplePivatorSubsystem/currentRotation", currentRotation);
     Logger.recordOutput("ExamplePivatorSubsystem/currentHeight", currentHeight);
@@ -124,11 +103,6 @@ public class PivatorSubsystem {
     systemState = handleStateTransition();
     applyStates();
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
-    pivotMotor.setControl(PivatorConstants.pivotPositionVoltage.withPosition(targetRotation));
-    elevatorFrontMotor.setControl(PivatorConstants.elevatorMotionMagicVoltage.withPosition(targetHeight));
-    if (Utils.isSimulation()) {
-      simMech.updatePivot(pivotMotor.getPosition(), elevatorFrontMotor.getPosition());
-    }
   }
 
   private void stow() {
