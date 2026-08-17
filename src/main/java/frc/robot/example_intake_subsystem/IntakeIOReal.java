@@ -11,7 +11,7 @@ public class IntakeIOReal implements IntakeIO {
     private final TalonFX intakeMotor;
     private final CANrange canRange;
     private final TalonFXSimProfile intakeSimMotor;
-    private final double rotorInertia = 0.02;
+    private final double rotorInertia = 0.001;
 
     public IntakeIOReal(){
         intakeMotor = new TalonFX(Constants.intakeMotorId);

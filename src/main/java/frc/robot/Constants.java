@@ -5,6 +5,8 @@ import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 
 public class Constants {
         public static boolean IS_AT_COMP = false;
+        public static final boolean tuningMode = false;
+
 
 
         /*Change the second value to change different runtime modes for AdvantageKit such as

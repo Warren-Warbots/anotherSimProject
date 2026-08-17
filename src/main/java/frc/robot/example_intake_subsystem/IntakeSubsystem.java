@@ -10,17 +10,29 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.simulation.TalonFXSimProfile;
+import frc.robot.util.LoggedTunableNumber;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+
 
 public class IntakeSubsystem {
   /** Creates a new IntakeSubsystem. */
-
   public WantedState wantedState = WantedState.STOP;
   private SystemState systemState = SystemState.STOPPED;
   public final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
   private double timestampAtSetState = Timer.getFPGATimestamp();
   private TalonFXSimProfile intakeMotorSim;
+  double wantedIntakeSpeed = 0.0;
+  private static final LoggedTunableNumber intakeValue =
+          new LoggedTunableNumber("Intake/Values/Intake", 12);
+  private static final LoggedTunableNumber outtakeValue =
+          new LoggedTunableNumber("Intake/Values/Outtake", -12.0);
+  private static final LoggedTunableNumber stowValue =
+          new LoggedTunableNumber("Intake/Values/Stow", 0.0);
+
+
+
 
   TalonFX intakeMotor;
   CANrange canrange = new CANrange(Constants.intakeCANrangeId);
@@ -59,7 +71,9 @@ public class IntakeSubsystem {
 
   private void collectInputs() {
     io.updateInputs(inputs);
-    Logger.processInputs("Intake", inputs);
+    Logger.processInputs("Intake/Inputs", inputs);
+    Logger.recordOutput("Intake/intakeSpeed", inputs.intakeSpeed);
+    Logger.recordOutput("Intake/CANRange", inputs.canDetected);
     Logger.recordOutput("Intake/wantedState", wantedState.name());
     Logger.recordOutput("Intake/systemState", systemState.name());
   }
@@ -77,9 +91,15 @@ public class IntakeSubsystem {
   // this applies motor controls based on systemState (simple version)
   private void applyStates() {
     switch (systemState) {
-      case INTAKING -> io.setVoltage(-12.0);
-      case OUTTAKING -> io.setVoltage(4.0);
-      case STOPPED -> io.setVoltage(0.0);
+      case INTAKING -> {
+        wantedIntakeSpeed = intakeValue.get();
+      }
+      case OUTTAKING -> {
+        wantedIntakeSpeed = outtakeValue.get();
+      }
+      case STOPPED -> {
+        wantedIntakeSpeed = stowValue.get();
+      }
     }
   }
 
@@ -94,8 +114,14 @@ public class IntakeSubsystem {
     collectInputs();
     systemState = handleStateTransitions();
     applyStates();
+    io.setVoltage(intakeValue());
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
     // this is where logging goes
+  }
+
+  @AutoLogOutput(key = "Intake/CommandedVoltage")
+  public double intakeValue(){
+    return wantedIntakeSpeed;
   }
 
 }

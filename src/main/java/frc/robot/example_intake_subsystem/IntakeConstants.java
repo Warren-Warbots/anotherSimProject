@@ -8,8 +8,8 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
-
 import frc.robot.Constants;
+import frc.robot.util.LoggedTunableNumber;
 
 /** Add your docs here. */
 public class IntakeConstants {
@@ -35,5 +35,6 @@ public class IntakeConstants {
             .withClosedLoopRamps(Constants.CLOSED_LOOP_RAMP);
 
     public static VoltageOut intakeVoltageOut = new VoltageOut(0.0);
+
 
 }
