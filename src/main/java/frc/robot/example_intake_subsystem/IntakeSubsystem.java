@@ -61,12 +61,10 @@ public class IntakeSubsystem {
 
   public void setWantedState(WantedState wantedState) {
     this.wantedState = wantedState;
-
   }
 
   public boolean getSensor() {
     return canrange.getIsDetected().getValue();
-
   }
 
   private void collectInputs() {
@@ -114,14 +112,14 @@ public class IntakeSubsystem {
     collectInputs();
     systemState = handleStateTransitions();
     applyStates();
-    io.setVoltage(intakeValue());
+    io.setVoltage(wantedIntakeSpeed);
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
     // this is where logging goes
   }
 
-  @AutoLogOutput(key = "Intake/CommandedVoltage")
-  public double intakeValue(){
-    return wantedIntakeSpeed;
+  @AutoLogOutput(key = "Intake/TestValue")
+  public double intakeTestValue(){
+    return inputs.intakeSpeed + 1;
   }
 
 }
