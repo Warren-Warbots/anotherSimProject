@@ -117,9 +117,9 @@ public class IntakeSubsystem {
     // this is where logging goes
   }
 
-  @AutoLogOutput(key = "Intake/TestValue")
+  @AutoLogOutput(key = "Intake/whatIfSpeed")
   public double intakeTestValue(){
-    return inputs.intakeSpeed + 1;
+    return inputs.intakeSpeed + 4;
   }
 
 }

@@ -15,7 +15,7 @@ public class Constants {
         REPLAY to use replay editing from AdvantageKit.
         Do Not Touch Mode.Real, only edit the value after the colon
         */
-        public static Mode robotMode = Robot.isReal() ? Mode.REAL : Mode.SIM;
+        public static Mode robotMode = Robot.isReal() ? Mode.REAL : Mode.REPLAY;
 
         // public static final String BETA_SERIAL_NUMBER = "-";// 0329F366
         // public static final String SERIAL_NUMBER = System.getenv("serialnum");
