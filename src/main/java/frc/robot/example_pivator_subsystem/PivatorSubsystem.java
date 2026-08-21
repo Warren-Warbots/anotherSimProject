@@ -14,6 +14,9 @@ import frc.robot.Constants;
 import frc.robot.simulation.SimMech;
 import frc.robot.simulation.TalonFXSimProfile;
 import frc.robot.util.TalonFxUtils;
+
+import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class PivatorSubsystem {
@@ -27,6 +30,7 @@ public class PivatorSubsystem {
   public static final double rotorInertia = 0.02;
   public PivatorIO io;
 
+  private PivatorIOInputsAutoLogged inputs = new PivatorIOInputsAutoLogged();
   double targetRotation = 0.0;
   double targetHeight = 0.0;
   double currentRotation = 0.0;
@@ -66,12 +70,13 @@ public class PivatorSubsystem {
   }
 
   private void collectInputs() {
+    io.updateInputs(inputs);
     atGoal = pivotAtGoal && elevatorAtGoal;
     Logger.recordOutput("ExamplePivatorSubsystem/currentRotation", currentRotation);
     Logger.recordOutput("ExamplePivatorSubsystem/currentHeight", currentHeight);
 
     // add logging here
-    DogLog.log("ExamplePivatorSubsystem/systemState", systemState.name());
+    Logger.recordOutput("ExamplePivatorSubsystem/systemState", systemState.name());
   }
 
   // this handles simple, 1:1 transitions (see robot manager for more complex
@@ -103,6 +108,7 @@ public class PivatorSubsystem {
     systemState = handleStateTransition();
     applyStates();
     double timeInState = Timer.getFPGATimestamp() - timestampAtSetState;
+    io.setPivatorPosition(targetRotation);
   }
 
   private void stow() {
@@ -113,6 +119,18 @@ public class PivatorSubsystem {
   private void scoreLVL4() {
     targetHeight = Constants.IS_COMP_BOT ? 31.2 : 56;
     targetRotation = Constants.IS_COMP_BOT ? 0.52 : 0.437763;
+  }
+
+  @AutoLogOutput(key = "ExamplePivatorSubsystem/whatIfRotation")
+  public double pivatorWhatIf(){
+    return inputs.pivatorPosition + 0;
+    //edit the value by however
+  }
+
+   @AutoLogOutput(key = "ExamplePivatorSubsystem/whatIfHeight")
+  public double elevatorWhatIf(){
+    return inputs.currentHeight + 0;
+    //edit the value by however
   }
 
 }
