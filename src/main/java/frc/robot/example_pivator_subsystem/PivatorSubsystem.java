@@ -122,7 +122,7 @@ public class PivatorSubsystem {
   }
 
   @AutoLogOutput(key = "ExamplePivatorSubsystem/whatIfRotation")
-  public double pivatorWhatIf(){
+  public double pivotWhatIf(){
     return inputs.pivatorPosition + 0;
     //edit the value by however
   }
